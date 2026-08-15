@@ -1,4 +1,4 @@
-const n = 6;
+const n = 23;
 const parts = await Promise.all(
   Array.from({ length: n }, (_, i) =>
     fetch(new URL(`./chunks/part-${i}.js`, import.meta.url)).then((r) => {
