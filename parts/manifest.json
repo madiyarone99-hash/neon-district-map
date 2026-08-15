@@ -1,0 +1,253 @@
+{
+  "city": {
+    "bytes": 85724,
+    "sha256": "1628d28dfcccecca952e27b962fc5bf28418fa251b717fcaed446cf8446f5957",
+    "parts": [
+      "city.00.b64",
+      "city.01.b64",
+      "city.02.b64",
+      "city.03.b64",
+      "city.04.b64",
+      "city.05.b64",
+      "city.06.b64",
+      "city.07.b64",
+      "city.08.b64",
+      "city.09.b64",
+      "city.10.b64"
+    ],
+    "partChecksums": [
+      {
+        "name": "city.00.b64",
+        "bytes": 8000,
+        "sha256": "b2da4487bdfed396d9bbc44c2cf9657cfd369cd973a82ca79c41d34d02d84629"
+      },
+      {
+        "name": "city.01.b64",
+        "bytes": 8000,
+        "sha256": "3ff3986f3745c8ba17f7acb8cda375f073c234bd404baedd616d1fe2be3db22b"
+      },
+      {
+        "name": "city.02.b64",
+        "bytes": 8000,
+        "sha256": "61c676ff22a27a54c7c78092e67a5bccb4e551ddadc8afcdb8e9a857de635087"
+      },
+      {
+        "name": "city.03.b64",
+        "bytes": 8000,
+        "sha256": "4cc4c46dbf588b035b2bdc703a69ad52a430c7264930c8a6ac65cef4ff892842"
+      },
+      {
+        "name": "city.04.b64",
+        "bytes": 8000,
+        "sha256": "550e6e58598b82b441a58d6741f3f2e3e0a5bf6a4b5a540966625a49180795a2"
+      },
+      {
+        "name": "city.05.b64",
+        "bytes": 8000,
+        "sha256": "ccafd3b7c54b347f25d84e63f763c3fc61c7534581b165a4c7d9faf19c074886"
+      },
+      {
+        "name": "city.06.b64",
+        "bytes": 8000,
+        "sha256": "8081c61cdd69560ac7bbce640463998c27cfb48fd98d2e3366bbf62fc43ff766"
+      },
+      {
+        "name": "city.07.b64",
+        "bytes": 8000,
+        "sha256": "2884f3b93e5d553e908ee1363bfd772ee20fcba6838a032781f9ea4347cc6b4a"
+      },
+      {
+        "name": "city.08.b64",
+        "bytes": 8000,
+        "sha256": "cdb99f75886889fdda9dfd3354184d7e9e3796a2ff58d87624b68611167fe737"
+      },
+      {
+        "name": "city.09.b64",
+        "bytes": 8000,
+        "sha256": "b7014eb56f2b10bfde551fa659659926f86dea0a8b847d367f0e16ddc79601a9"
+      },
+      {
+        "name": "city.10.b64",
+        "bytes": 5724,
+        "sha256": "2023be92b8a1edb5c8cf5177cf10d1396848580e31e7eb7980aa7583aef33444"
+      }
+    ]
+  },
+  "js": {
+    "file": "index-DLiehpFn.js",
+    "bytes": 223174,
+    "sha256": "fc6583900ebcdbe6c1ac55f32b36f18bafc6d34f5d12b2d10518b30c44ed7f1d",
+    "parts": [
+      "js.00.b64",
+      "js.01.b64",
+      "js.02.b64",
+      "js.03.b64",
+      "js.04.b64",
+      "js.05.b64",
+      "js.06.b64",
+      "js.07.b64",
+      "js.08.b64",
+      "js.09.b64",
+      "js.10.b64",
+      "js.11.b64",
+      "js.12.b64",
+      "js.13.b64",
+      "js.14.b64",
+      "js.15.b64",
+      "js.16.b64",
+      "js.17.b64",
+      "js.18.b64",
+      "js.19.b64",
+      "js.20.b64",
+      "js.21.b64",
+      "js.22.b64",
+      "js.23.b64",
+      "js.24.b64",
+      "js.25.b64",
+      "js.26.b64",
+      "js.27.b64"
+    ],
+    "partChecksums": [
+      {
+        "name": "js.00.b64",
+        "bytes": 8000,
+        "sha256": "6d09e5d8108b9c2eb740247dc20ac0bb70febe244ae7edc79609c30ac8142b6d"
+      },
+      {
+        "name": "js.01.b64",
+        "bytes": 8000,
+        "sha256": "7faf3542aeb6fc7e4dbaa675097d78b371e061a8022faf92135d5131ef2cc293"
+      },
+      {
+        "name": "js.02.b64",
+        "bytes": 8000,
+        "sha256": "8271cefdd19c7ff602a0df3bf6a9a237b8f1a182519b5b8c1c543da51e286cd8"
+      },
+      {
+        "name": "js.03.b64",
+        "bytes": 8000,
+        "sha256": "dda28967c619f11cc9e2e79123f8334bf6fa7a2c6edac2c17e946c67406e97d5"
+      },
+      {
+        "name": "js.04.b64",
+        "bytes": 8000,
+        "sha256": "9db2811bb891a97f8862ae46e0b1a2fb3cae64e838d2d7e953f73eae0b175c78"
+      },
+      {
+        "name": "js.05.b64",
+        "bytes": 8000,
+        "sha256": "0df000859d693dda074e9f423c201933f2e30ae47fa1665e99a50db3bf4145d4"
+      },
+      {
+        "name": "js.06.b64",
+        "bytes": 8000,
+        "sha256": "5baa8e74ef591a251e5f41b35d6390c372078ce3b0e8eab35d8eb22f11ee4069"
+      },
+      {
+        "name": "js.07.b64",
+        "bytes": 8000,
+        "sha256": "3b79ecf2812d3a8a796869636509067de0500d4094c3bed34e66c19a45efac6c"
+      },
+      {
+        "name": "js.08.b64",
+        "bytes": 8000,
+        "sha256": "ed049499399962c88e40f404310c845463f0ebdc58bfc34a56d7a4870afea950"
+      },
+      {
+        "name": "js.09.b64",
+        "bytes": 8000,
+        "sha256": "c1a00b84c64cd6ec6ff62d9f9a03d528532caae5ef3e4d5169cfdbc3d0391c6d"
+      },
+      {
+        "name": "js.10.b64",
+        "bytes": 8000,
+        "sha256": "9967078ad21c5a4a236d4df144063282d672d24d2c9b493469ba30dabb61bea7"
+      },
+      {
+        "name": "js.11.b64",
+        "bytes": 8000,
+        "sha256": "3b92d6e3d9be1b97839bb2215af9fcd02ac3c5629ec930c82439f4396afb982d"
+      },
+      {
+        "name": "js.12.b64",
+        "bytes": 8000,
+        "sha256": "c2a607be0210fc6b0ccb11a7e59f5f8f9b6c7a4f70db1cbbbd2405bc1d9a52ac"
+      },
+      {
+        "name": "js.13.b64",
+        "bytes": 8000,
+        "sha256": "fa1b225315b55ff846ce3afd017360826af8a3f93f222f6100040fe2e9b8d639"
+      },
+      {
+        "name": "js.14.b64",
+        "bytes": 8000,
+        "sha256": "a56e88c469b33863b86737f9a4ccf5e6533adb1439bfd048156a64d25a86e935"
+      },
+      {
+        "name": "js.15.b64",
+        "bytes": 8000,
+        "sha256": "a8bde842dd65027f1c531337a9b3fae1c082c12ab5ad567a8b03f8b10c3e6368"
+      },
+      {
+        "name": "js.16.b64",
+        "bytes": 8000,
+        "sha256": "c3484bc80ca9ff563b3cad22e438f62592008696102b8e0f51d3544f0a63d8d6"
+      },
+      {
+        "name": "js.17.b64",
+        "bytes": 8000,
+        "sha256": "1b5ffdde23b675902a631c6209406539aa6c1ed1c921db4b8050ed0b6e7bb268"
+      },
+      {
+        "name": "js.18.b64",
+        "bytes": 8000,
+        "sha256": "597484ffc9b979d5326ce1566b4e0af3f84d89903e94b7988c54187f8e4b37f2"
+      },
+      {
+        "name": "js.19.b64",
+        "bytes": 8000,
+        "sha256": "124d7f9cfd1f31de15985bd1c83d06dece37c319c9b271e651fe60f8c691f171"
+      },
+      {
+        "name": "js.20.b64",
+        "bytes": 8000,
+        "sha256": "ffaf598e75c00153c286c5c36373c751fb244446fea9f7c8a5d297da193281c8"
+      },
+      {
+        "name": "js.21.b64",
+        "bytes": 8000,
+        "sha256": "dfa3d7d2b6d97a156f4dd4bc43e66227f1843106e19ac1c99e90eb4681e39128"
+      },
+      {
+        "name": "js.22.b64",
+        "bytes": 8000,
+        "sha256": "fc0477851112d7b2efb50cd931788c1e3a88eb0556cf530f96ab3048c6e7a4f5"
+      },
+      {
+        "name": "js.23.b64",
+        "bytes": 8000,
+        "sha256": "9c74a8f0e1eba12bea4db2371238bf7ecb6d9b69bf235ceed95c5f9af8bc5339"
+      },
+      {
+        "name": "js.24.b64",
+        "bytes": 8000,
+        "sha256": "37945ac3cbb8a311b7c48ed4ee9ab81d8411c7d184b3aa9fe663136e72af5d34"
+      },
+      {
+        "name": "js.25.b64",
+        "bytes": 8000,
+        "sha256": "54c09ac8f896b8183ff8d19aed7fdfd1ed8fb68c95b3e5c6a1991418e9e44a0a"
+      },
+      {
+        "name": "js.26.b64",
+        "bytes": 8000,
+        "sha256": "001758d06af3f4403d9a76a189b2072fd48a31c61d53d18521482a5a9ef3a2db"
+      },
+      {
+        "name": "js.27.b64",
+        "bytes": 7174,
+        "sha256": "5b49288f5f6b6604e13a5f38f76027aa4512b3d17bd9343381263c2ca8719094"
+      }
+    ]
+  }
+}
