@@ -1,21 +1,166 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#05070d" />
-    <title>NEXUS-7 — Neon District Map</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-    <script type="module" crossorigin src="./assets/index-BupAa7jJ.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CXONp89B.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#05070d"/>
+<title>NEXUS-7 — Neon District Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Orbitron:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--cyan:#00f0ff;--magenta:#ff2bd6;--lime:#39ff88;--amber:#ffb020;--text:#e8f4ff;--muted:#7f97ad;--panel:rgba(8,14,26,.92)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'Exo 2',sans-serif;color:var(--text);background:#05070d}
+body{background:radial-gradient(900px 500px at 10% -10%,rgba(0,240,255,.12),transparent 55%),radial-gradient(700px 400px at 100% 0,rgba(255,43,214,.1),transparent 50%),#05070d}
+.app{max-width:1400px;margin:0 auto;padding:.75rem;min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto;gap:.75rem}
+.brand{display:flex;gap:.7rem;align-items:center}
+.mark{width:12px;height:40px;background:linear-gradient(180deg,var(--cyan),var(--magenta));box-shadow:0 0 16px rgba(0,240,255,.5)}
+h1{font-family:Orbitron,sans-serif;margin:0;font-size:clamp(1.4rem,4vw,2rem);background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:.15rem 0 0;color:var(--muted);letter-spacing:.18em;font-size:.75rem;text-transform:uppercase}
+.tag{color:var(--muted);font-size:.9rem;margin:.4rem 0 0}
+.layers{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.layers button,.tick,.play{border:1px solid rgba(0,240,255,.25);background:rgba(10,18,32,.7);color:var(--muted);border-radius:999px;padding:.35rem .7rem;font:inherit;cursor:pointer}
+.layers button.on{color:var(--cyan);border-color:rgba(0,240,255,.6);box-shadow:0 0 10px rgba(0,240,255,.2)}
+.stage{position:relative;min-height:0}
+.map{border:1px solid rgba(0,240,255,.2);border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#0c1626,#060a12);min-height:46vh;position:relative}
+.map svg{width:100%;display:block;min-height:46vh}
+.b path{fill:rgba(20,40,70,.85);stroke:rgba(0,240,255,.45);stroke-width:1.5;cursor:pointer;transition:.2s}
+.b.planned path{fill:rgba(40,40,60,.5);stroke:#889;stroke-dasharray:6 4}
+.b.excavation path{fill:rgba(80,50,20,.7);stroke:var(--amber)}
+.b.structure path{fill:rgba(20,55,90,.85);stroke:var(--cyan)}
+.b.finishing path{fill:rgba(30,80,100,.9);stroke:#7cf}
+.b.handover path{fill:rgba(20,90,70,.85);stroke:var(--lime)}
+.b.sold path{fill:rgba(50,30,70,.75);stroke:var(--magenta);opacity:.75}
+.b.sel path{stroke-width:3;filter:drop-shadow(0 0 10px rgba(0,240,255,.65))}
+.b text{pointer-events:none;font-family:Orbitron,sans-serif;font-size:11px;fill:#fff}
+.b .meta{font-family:'Exo 2',sans-serif;font-size:9px;fill:var(--cyan)}
+.panel{position:absolute;right:.6rem;top:.6rem;bottom:.6rem;width:min(340px,calc(100% - 1.2rem));overflow:auto;padding:1rem;border-radius:12px;border:1px solid rgba(0,240,255,.28);background:var(--panel);backdrop-filter:blur(12px);display:none;flex-direction:column;gap:.7rem;z-index:5}
+.panel.open{display:flex}
+.panel h2{font-family:Orbitron,sans-serif;margin:.15rem 0;font-size:1.1rem}
+.kicker{color:var(--magenta);font-size:.65rem;letter-spacing:.16em;margin:0}
+.close{border:1px solid rgba(0,240,255,.25);background:0;color:var(--muted);width:2rem;height:2rem;border-radius:8px;cursor:pointer;font-size:1.2rem}
+.head{display:flex;justify-content:space-between;gap:.5rem}
+.stats{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:.4rem}
+.stats div{padding:.5rem;border:1px solid rgba(255,255,255,.06);border-radius:8px;background:rgba(255,255,255,.02)}
+.stats span{display:block;font-size:.65rem;color:var(--muted);text-transform:uppercase}
+.stats strong{font-size:.9rem}
+.sec h3{font-family:Orbitron,sans-serif;font-size:.68rem;letter-spacing:.12em;color:var(--cyan);margin:0 0 .35rem}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;list-style:none;padding:0;margin:0}
+.chips li{font-size:.72rem;padding:.25rem .5rem;border:1px solid rgba(57,255,136,.35);color:var(--lime);border-radius:999px}
+.conds{margin:0;padding:0;list-style:none}
+.conds li{padding-left:.85rem;position:relative;font-size:.85rem;margin:.25rem 0}
+.conds li:before{content:'';position:absolute;left:0;top:.45rem;width:.3rem;height:.3rem;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.future{padding:.65rem;border-left:2px solid var(--magenta);background:rgba(255,43,214,.06);font-size:.85rem;color:var(--muted)}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;list-style:none;padding:0;margin:0}
+.phases li{font-size:.7rem;color:var(--muted);display:flex;gap:.3rem;align-items:center}
+.phases li.done{color:var(--text)}
+.phases li.cur{color:var(--lime)}
+.dot{width:.4rem;height:.4rem;border-radius:50%;background:#334;flex-shrink:0}
+.done .dot{background:var(--cyan)}.cur .dot{background:var(--lime);box-shadow:0 0 8px var(--lime)}
+.cta{margin-top:auto;border:0;border-radius:10px;padding:.8rem;background:linear-gradient(90deg,#0099aa,var(--cyan) 40%,#7a3cff);color:#041018;font-family:Orbitron,sans-serif;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.tl{border:1px solid rgba(0,240,255,.2);border-radius:12px;padding:.8rem;background:rgba(8,14,26,.75)}
+.tl-top{display:flex;gap:.7rem;align-items:center;margin-bottom:.5rem}
+.play{width:2.3rem;height:2.3rem;border-radius:50%;color:var(--cyan);flex-shrink:0;padding:0}
+.yn{font-family:Orbitron,sans-serif;font-size:1.3rem;color:var(--cyan)}
+.ye{color:var(--muted);font-size:.8rem}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,.12);outline:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px rgba(0,240,255,.8)}
+.ticks{display:flex;justify-content:space-between;overflow-x:auto;margin-top:.3rem}
+.tick{background:0;border:0;color:var(--muted);font-size:.65rem;padding:.2rem;min-width:2rem}
+.tick.on{color:var(--cyan);font-weight:700}
+.hint{text-align:center;color:var(--muted);font-size:.75rem;margin:0}
+@media(max-width:720px){.panel{position:fixed;left:0;right:0;top:auto;bottom:0;width:100%;max-height:58vh;border-radius:16px 16px 0 0}.map svg,.map{min-height:42vh}.b .meta{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="mark"></div><div><h1>NEXUS-7</h1><p class="sub">Neon Arc Quarter</p></div></div>
+    <p class="tag">Купи участок в будущем, которое уже строится</p>
+    <div class="layers" id="layers">
+      <button data-l="green" class="on">Зелень</button>
+      <button data-l="lrt" class="on">LRT</button>
+      <button data-l="mosque" class="on">Мечеть</button>
+    </div>
+  </header>
+  <main class="stage">
+    <div class="map" id="map"></div>
+    <aside class="panel" id="panel"></aside>
+  </main>
+  <div>
+    <div class="tl">
+      <div class="tl-top">
+        <button class="play" id="play">▶</button>
+        <div><div class="yn" id="yn">2026</div><div class="ye" id="ye"></div></div>
+      </div>
+      <input type="range" id="range" min="2024" max="2032" step="1" value="2026"/>
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <p class="hint">Крути год — LRT, парки, фазы и цены. Тапни здание.</p>
+  </div>
+</div>
+<script>
+const YEARS=[2024,2025,2026,2027,2028,2029,2030,2031,2032];
+const EVENTS={2024:'Старт квартала · мечеть открыта',2025:'Emerald Spine — зелёная зона',2026:'Старт LRT Neon Line',2027:'Pulse Park · LRT строится',2028:'Расширение парка · North Spire',2029:'Пик сдачи корпусов',2030:'LRT открыт · переоценка',2031:'Canal food-court',2032:'Планы второй фазы'};
+const PHASE={planned:'План',excavation:'Котлован',structure:'Каркас',finishing:'Отделка',handover:'Сдача',sold:'Продано'};
+const AM={lrt:'LRT рядом',mosque:'Мега-мечеть',green:'Зелёная зона',market:'Базар',school:'Школа'};
+const buildings=[
+{id:'b1',name:'Prism Tower',tag:'Стеклянный хай-райз у LRT',poly:'M120 300 L200 280 L220 380 L140 400 Z',lx:160,ly:340,area:420,floors:28,am:['lrt','green'],cond:['Первый взнос от 20%','Рассрочка до сдачи без %','Вид на канал + LRT'],appear:2024,phase:{2024:'excavation',2025:'structure',2026:'structure',2027:'finishing',2028:'handover',2029:'sold',2030:'sold',2031:'sold',2032:'sold'},prices:{2024:480,2025:520,2026:610,2027:690,2028:780,2029:820,2030:860,2031:900,2032:940},future:'К 2030 — ритейл-подиум и sky-bridge к LRT'},
+{id:'b2',name:'Mosque Gate',tag:'Лофты у Aurora Mosque',poly:'M300 200 L390 180 L410 270 L320 290 Z',lx:350,ly:235,area:95,floors:12,am:['mosque','green','market'],cond:['Семейные 2–4 комн.','Закрытый двор','Шариат-friendly escrow'],appear:2024,phase:{2024:'planned',2025:'excavation',2026:'structure',2027:'finishing',2028:'handover',2029:'handover',2030:'sold',2031:'sold',2032:'sold'},prices:{2024:390,2025:410,2026:470,2027:540,2028:600,2029:640,2030:680,2031:710,2032:740},future:'После 2029 — wellness-этаж и терраса'},
+{id:'b3',name:'Canal Strip',tag:'Ритейл + апартаменты у воды',poly:'M240 440 L360 420 L380 500 L260 520 Z',lx:310,ly:470,area:160,floors:8,am:['green','market'],cond:['Коммерция 1 этаж','Аренда до сдачи ок','Льгота 2 года'],appear:2025,phase:{2025:'planned',2026:'excavation',2027:'structure',2028:'finishing',2029:'handover',2030:'handover',2031:'sold',2032:'sold'},prices:{2025:350,2026:380,2027:430,2028:510,2029:580,2030:620,2031:660,2032:700},future:'К 2031 — food-court на канале'},
+{id:'b4',name:'LRT Hub',tag:'Жить над станцией',poly:'M520 280 L640 260 L660 360 L540 380 Z',lx:590,ly:320,area:72,floors:18,am:['lrt','green','school'],cond:['5 мин до LRT','Smart-home','Кешбек 3% до 2027'],appear:2026,phase:{2026:'planned',2027:'excavation',2028:'structure',2029:'finishing',2030:'handover',2031:'handover',2032:'sold'},prices:{2026:520,2027:560,2028:640,2029:720,2030:800,2031:850,2032:910},future:'После LRT — переоценка +20–25%'},
+{id:'b5',name:'Pulse Villas',tag:'Таунхаусы у парка',poly:'M740 380 L860 360 L880 460 L760 480 Z',lx:810,ly:420,area:210,floors:3,am:['green','school'],cond:['Участок 80 м²','2 парковки','Лимит этажности'],appear:2027,phase:{2027:'planned',2028:'excavation',2029:'structure',2030:'finishing',2031:'handover',2032:'handover'},prices:{2027:450,2028:480,2029:540,2030:610,2031:680,2032:720},future:'К 2032 — велодорожка к мечети'},
+{id:'b6',name:'North Spire',tag:'Флагман 2030+',poly:'M600 100 L700 80 L740 180 L640 200 Z',lx:670,ly:140,area:110,floors:42,am:['lrt','mosque','green','market'],cond:['Pre-sale до 2028','Мин. 2 комнаты','Консьерж + sky lounge'],appear:2028,phase:{2028:'planned',2029:'excavation',2030:'structure',2031:'structure',2032:'finishing'},prices:{2028:700,2029:760,2030:850,2031:940,2032:1050},future:'2033–35: башня-близнец'}
+];
+let year=2026, sel='b1', layers={green:1,lrt:1,mosque:1}, playing=0, timer=null;
+const fmt=p=>p>=1000?(p/1000).toFixed(2)+' млн ₸/м²':p+'k ₸/м²';
+function render(){
+  document.getElementById('yn').textContent=year;
+  document.getElementById('ye').textContent=EVENTS[year];
+  document.getElementById('range').value=year;
+  [...document.querySelectorAll('.tick')].forEach(t=>t.classList.toggle('on',+t.dataset.y===year));
+  const lrtOpen=year>=2030, lrtBuild=year>=2026&&year<2030;
+  const green1=year>=2025, green1e=year>=2028, green2=year>=2027;
+  let svg=`<svg viewBox="0 0 1000 620" style="width:100%">
+  <defs><linearGradient id="w" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0a3d55"/><stop offset="1" stop-color="#062433"/></linearGradient>
+  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#39ff88" stop-opacity=".55"/><stop offset="1" stop-color="#0d5c36" stop-opacity=".35"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <g opacity=".3" stroke="#4a6a7a" stroke-width="2" stroke-dasharray="4 8"><path d="M0 200 H1000"/><path d="M0 360 H1000"/><path d="M200 0 V620"/><path d="M520 0 V620"/></g>
+  <path d="M40 520 C180 480,320 560,480 500 S780 420,960 480 L960 600 L40 600 Z" fill="url(#w)" stroke="#1a8ab8"/>`;
+  if(layers.mosque) svg+=`<path d="M200 120 L280 90 L340 140 L300 220 L180 200 Z" fill="#1a1030" stroke="#ff2bd6" stroke-width="2" filter="url(#glow)"/><text x="210" y="155" fill="#ff9de8" font-family="Orbitron" font-size="11" letter-spacing="2">MEGA MOSQUE</text>`;
+  if(layers.green&&green1) svg+=`<path d="${green1e?'M380 140 L560 120 L620 300 L500 360 L340 280 Z':'M420 180 L520 160 L560 280 L480 320 L400 260 Z'}" fill="url(#g)" stroke="#39ff88"/>`;
+  if(layers.green&&green2) svg+=`<path d="M720 220 L860 200 L880 340 L740 360 Z" fill="url(#g)" stroke="#39ff88"/>`;
+  if(layers.lrt&&year>=2026){svg+=`<path d="M60 380 C220 340,400 300,560 320 S820 380,940 300" fill="none" stroke="${lrtOpen?'#00f0ff':'#ffb020'}" stroke-width="${lrtOpen?6:4}" stroke-dasharray="${lrtOpen?0:'12 10'}" filter="url(#glow)"/>
+  <circle cx="120" cy="360" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="400" cy="310" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="700" cy="350" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="900" cy="310" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/>
+  <text x="560" y="300" fill="#00f0ff" font-family="Orbitron" font-size="10">${lrtOpen?'LRT OPEN':lrtBuild?'LRT BUILD':'LRT'}</text>`}
+  buildings.forEach(b=>{
+    if(year<b.appear) return;
+    const ph=b.phase[year], pr=b.prices[year], on=sel===b.id;
+    svg+=`<g class="b ${ph||''} ${on?'sel':''}" data-id="${b.id}"><path d="${b.poly}"/><text x="${b.lx}" y="${b.ly-6}" text-anchor="middle">${b.name.split(' ')[0]}</text><text class="meta" x="${b.lx}" y="${b.ly+12}" text-anchor="middle">${PHASE[ph]||''}${pr?' · '+fmt(pr):''}</text></g>`;
+  });
+  svg+='</svg>';
+  document.getElementById('map').innerHTML=svg;
+  document.querySelectorAll('.b').forEach(g=>g.onclick=()=>{sel=g.dataset.id;render()});
+  const b=buildings.find(x=>x.id===sel);
+  const pan=document.getElementById('panel');
+  if(!b||year<b.appear){pan.classList.remove('open');return}
+  pan.classList.add('open');
+  const ph=b.phase[year], pr=b.prices[year], prev=b.prices[year-1];
+  const delta=pr&&prev?((pr-prev)/prev*100).toFixed(1):null;
+  const order=['planned','excavation','structure','finishing','handover','sold'];
+  const idx=order.indexOf(ph);
+  pan.innerHTML=`<div class="head"><div><p class="kicker">OBJECT // ${b.id.toUpperCase()}</p><h2>${b.name}</h2><p style="margin:0;color:var(--muted);font-size:.85rem">${b.tag}</p></div><button class="close" id="cls">×</button></div>
+  <div class="stats"><div><span>Цена ${year}</span><strong>${pr?fmt(pr):'—'}</strong>${delta!=null?`<div style="color:${delta>=0?'var(--lime)':'var(--magenta)'};font-size:.7rem">${delta>=0?'+':''}${delta}% YoY</div>`:''}</div><div><span>Площадь</span><strong>${b.area} м²</strong></div><div><span>Этажей</span><strong>${b.floors}</strong></div></div>
+  <div class="sec"><h3>Фазы стройки</h3><ol class="phases">${order.map((p,i)=>`<li class="${i<=idx?'done':''} ${p===ph?'cur':''}"><span class="dot"></span>${PHASE[p]}</li>`).join('')}</ol></div>
+  <div class="sec"><h3>Рядом</h3><ul class="chips">${b.am.map(a=>`<li>${AM[a]}</li>`).join('')}</ul></div>
+  <div class="sec"><h3>Условия</h3><ul class="conds">${b.cond.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+  <div class="future"><strong style="color:var(--magenta)">Что дальше</strong><br>${b.future}</div>
+  <button class="cta">Забронировать интерес</button>`;
+  document.getElementById('cls').onclick=()=>{sel=null;render()};
+}
+YEARS.forEach(y=>{const b=document.createElement('button');b.className='tick'+(y===year?' on':'');b.dataset.y=y;b.textContent=y;b.onclick=()=>{year=y;render()};document.getElementById('ticks').appendChild(b)});
+document.getElementById('range').oninput=e=>{year=+e.target.value;render()};
+document.getElementById('layers').onclick=e=>{const btn=e.target.closest('button');if(!btn)return;const k=btn.dataset.l;layers[k]=!layers[k];btn.classList.toggle('on',!!layers[k]);render()};
+document.getElementById('play').onclick=()=>{playing=!playing;document.getElementById('play').textContent=playing?'❚❚':'▶';if(playing){timer=setInterval(()=>{if(year>=2032){playing=0;document.getElementById('play').textContent='▶';clearInterval(timer);return}year++;render()},1200)}else clearInterval(timer)};
+render();
+</script>
+</body>
 </html>
