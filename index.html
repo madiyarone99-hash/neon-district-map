@@ -3,664 +3,553 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-  <meta name="theme-color" content="#05070d" />
-  <title>NEXUS-7 — Neon District Map</title>
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@600;700&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#0b1018" />
+  <title>NEXUS-7 — карта объектов</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
     :root {
-      --cyan: #00f0ff;
-      --magenta: #ff2bd6;
-      --lime: #39ff88;
-      --amber: #ffb020;
-      --text: #e8f4ff;
-      --muted: #8aa0b5;
-      --panel: rgba(6, 10, 18, 0.88);
-      --line: rgba(0, 240, 255, 0.28);
-      --font-d: 'Orbitron', sans-serif;
-      --font-b: 'Exo 2', sans-serif;
+      --bg: #0b1018;
+      --card: rgba(16, 22, 32, 0.92);
+      --stroke: rgba(255,255,255,0.10);
+      --text: #f3f6fb;
+      --muted: #9aa6b8;
+      --accent: #2ee6ff;
+      --hot: #ff4d8d;
+      --ok: #3ee6a0;
+      --warn: #ffb020;
+      --font: 'Manrope', system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--font-b); color: var(--text); background: #05070d; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--font); color: var(--text); background: var(--bg); }
     #map { position: absolute; inset: 0; }
-    .maplibregl-ctrl-attrib { font-size: 10px !important; background: rgba(0,0,0,.45) !important; color: #9ab !important; }
-    .maplibregl-ctrl-attrib a { color: #9cf !important; }
-    .maplibregl-ctrl-group { background: rgba(8,14,26,.9) !important; border: 1px solid var(--line) !important; }
-    .maplibregl-ctrl-group button { filter: invert(1) hue-rotate(160deg); }
-
-    .chrome {
-      position: absolute; z-index: 2; pointer-events: none;
-      inset: 0; display: flex; flex-direction: column; justify-content: space-between;
-      padding: max(0.7rem, env(safe-area-inset-top)) 0.75rem max(0.7rem, env(safe-area-inset-bottom));
+    .maplibregl-ctrl-attrib { display: none !important; }
+    .maplibregl-ctrl-group {
+      background: rgba(16,22,32,.88) !important;
+      border: 1px solid var(--stroke) !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+      overflow: hidden;
     }
-    .chrome > * { pointer-events: auto; }
+    .maplibregl-ctrl-group button { filter: invert(1) contrast(1.1); width: 34px; height: 34px; }
 
-    .top {
-      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-start; justify-content: space-between;
+    .hud { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+    .hud > * { pointer-events: auto; }
+
+    .topbar {
+      position: absolute; left: 12px; right: 56px; top: max(12px, env(safe-area-inset-top));
+      display: flex; gap: 8px; align-items: center;
     }
     .brand {
-      display: flex; gap: 0.65rem; align-items: center;
-      padding: 0.65rem 0.85rem; border-radius: 14px;
-      background: var(--panel); border: 1px solid var(--line);
-      backdrop-filter: blur(16px); box-shadow: 0 12px 40px rgba(0,0,0,.45);
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 14px;
+      background: var(--card); border: 1px solid var(--stroke);
+      backdrop-filter: blur(18px);
     }
-    .mark {
-      width: 10px; height: 36px; border-radius: 2px;
-      background: linear-gradient(180deg, var(--cyan), var(--magenta));
-      box-shadow: 0 0 18px rgba(0,240,255,.55);
+    .logo {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(145deg, #2ee6ff, #7a5cff);
+      box-shadow: 0 0 16px rgba(46,230,255,.4);
     }
-    .brand h1 {
-      margin: 0; font-family: var(--font-d); font-size: 1.25rem; letter-spacing: 0.04em;
-      background: linear-gradient(90deg, #fff, var(--cyan));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
-    .brand p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
+    .brand strong { display: block; font-size: 13px; letter-spacing: .02em; }
+    .brand small { color: var(--muted); font-size: 10px; }
 
-    .layers {
-      display: flex; flex-wrap: wrap; gap: 0.35rem;
-      padding: 0.4rem; border-radius: 999px;
-      background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(16px);
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px; }
+    .chips button {
+      flex: 0 0 auto; border: 1px solid var(--stroke); background: var(--card);
+      color: var(--muted); border-radius: 999px; padding: 8px 11px;
+      font: 600 11px/1 var(--font); letter-spacing: .04em; text-transform: uppercase;
+      backdrop-filter: blur(18px); cursor: pointer;
     }
-    .layers button {
-      border: 1px solid transparent; background: transparent; color: var(--muted);
-      border-radius: 999px; padding: 0.4rem 0.75rem; font: inherit; font-size: 0.72rem;
-      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    .chips button.on { color: #081018; background: var(--accent); border-color: transparent; }
+
+    .legend {
+      position: absolute; left: 12px; bottom: 168px;
+      padding: 10px 12px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--stroke); backdrop-filter: blur(16px);
+      font-size: 11px; color: var(--muted); line-height: 1.55;
     }
-    .layers button.on {
-      color: var(--cyan); border-color: rgba(0,240,255,.45);
-      box-shadow: 0 0 14px rgba(0,240,255,.2); background: rgba(0,240,255,.08);
+    .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+
+    .sheet {
+      position: absolute; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom));
+      max-width: 560px; margin: 0 auto; z-index: 4;
+      border-radius: 20px; background: var(--card);
+      border: 1px solid var(--stroke); backdrop-filter: blur(22px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+      overflow: hidden; display: none;
+    }
+    .sheet.open { display: block; }
+    .grab { width: 36px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.18); margin: 8px auto 0; }
+    .peek { padding: 10px 14px 12px; cursor: pointer; }
+    .peek-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .kicker { margin: 0; color: var(--accent); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+    .peek h2 { margin: 2px 0 0; font-size: 18px; }
+    .peek .sub { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .price { text-align: right; }
+    .price b { display: block; font-size: 16px; color: #fff; }
+    .price span { color: var(--ok); font-size: 11px; font-weight: 700; }
+    .x {
+      position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
+      border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; cursor: pointer;
+    }
+    .more { display: none; padding: 0 14px 14px; }
+    .sheet.exp .more { display: block; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 8px 0 10px; }
+    .stats div { padding: 8px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid var(--stroke); }
+    .stats span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
+    .stats b { font-size: 13px; }
+    .phases { display: flex; gap: 4px; margin: 8px 0; }
+    .phases li {
+      flex: 1; list-style: none; text-align: center; font-size: 9px; color: var(--muted);
+      padding: 6px 2px; border-radius: 8px; background: rgba(255,255,255,.04);
+    }
+    .phases li.done { color: var(--text); }
+    .phases li.cur { color: #04120c; background: var(--ok); font-weight: 800; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .tags span {
+      font-size: 11px; padding: 5px 8px; border-radius: 999px;
+      border: 1px solid rgba(62,230,160,.35); color: var(--ok);
+    }
+    .conds { margin: 0; padding: 0; list-style: none; }
+    .conds li { font-size: 13px; padding: 5px 0 5px 14px; position: relative; }
+    .conds li::before { content: ''; position: absolute; left: 0; top: 11px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .next { margin-top: 8px; padding: 10px; border-radius: 12px; background: rgba(255,77,141,.08); border-left: 3px solid var(--hot); color: #d7dde8; font-size: 13px; }
+    .cta {
+      width: 100%; margin-top: 10px; border: 0; border-radius: 14px; padding: 13px;
+      background: linear-gradient(90deg, #2ee6ff, #7a5cff); color: #061018;
+      font: 800 13px var(--font); letter-spacing: .04em; text-transform: uppercase; cursor: pointer;
     }
 
-    .bottom {
-      display: grid; gap: 0.55rem;
-      width: min(720px, 100%);
-      margin: 0 auto;
+    .tl {
+      position: absolute; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom));
+      max-width: 560px; margin: 0 auto; z-index: 3;
+      padding: 10px 12px 8px; border-radius: 16px;
+      background: var(--card); border: 1px solid var(--stroke); backdrop-filter: blur(18px);
     }
-    .timeline {
-      padding: 0.75rem 0.9rem 0.65rem; border-radius: 16px;
-      background: var(--panel); border: 1px solid var(--line);
-      backdrop-filter: blur(16px); box-shadow: 0 -8px 40px rgba(0,0,0,.35);
-    }
-    .tl-top { display: flex; gap: 0.7rem; align-items: center; margin-bottom: 0.45rem; }
+    .sheet.open ~ .hud .tl, body.has-sheet .tl { bottom: auto; } /* handled in JS via class */
+    body.has-sheet .tl { display: none; }
+    .tl-top { display: flex; align-items: center; gap: 10px; }
     .play {
-      width: 2.3rem; height: 2.3rem; border-radius: 50%; flex-shrink: 0;
-      border: 1px solid rgba(0,240,255,.45); background: rgba(0,240,255,.08);
-      color: var(--cyan); cursor: pointer; font-size: 0.85rem;
+      width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(46,230,255,.4);
+      background: rgba(46,230,255,.1); color: var(--accent); cursor: pointer;
     }
-    .yn { font-family: var(--font-d); font-size: 1.25rem; color: var(--cyan); }
-    .ye { color: var(--muted); font-size: 0.78rem; line-height: 1.3; }
+    .yn { font-size: 18px; font-weight: 800; }
+    .ye { color: var(--muted); font-size: 11px; }
     input[type=range] {
-      -webkit-appearance: none; width: 100%; height: 8px; border-radius: 999px;
-      background: linear-gradient(90deg, var(--cyan) 0%, var(--cyan) var(--p, 25%), rgba(255,255,255,.12) var(--p, 25%));
-      outline: none;
+      -webkit-appearance: none; width: 100%; height: 6px; border-radius: 99px; margin-top: 8px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent) var(--p,25%), rgba(255,255,255,.12) var(--p,25%));
     }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-      background: #fff; border: 2px solid var(--cyan); box-shadow: 0 0 14px rgba(0,240,255,.85); cursor: grab;
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(46,230,255,.7);
     }
-    .ticks { display: flex; justify-content: space-between; margin-top: 0.25rem; overflow-x: auto; }
-    .ticks button {
-      border: 0; background: 0; color: var(--muted); font-size: 0.62rem; padding: 0.15rem; cursor: pointer; min-width: 2rem;
-    }
-    .ticks button.on { color: var(--cyan); font-weight: 700; }
+    .years { display: flex; justify-content: space-between; margin-top: 2px; }
+    .years button { border: 0; background: 0; color: var(--muted); font-size: 10px; padding: 2px; cursor: pointer; }
+    .years button.on { color: var(--accent); font-weight: 800; }
 
-    .panel {
-      position: absolute; z-index: 3; right: 0.75rem; top: 5.2rem;
-      width: min(360px, calc(100% - 1.5rem)); max-height: calc(100% - 11rem);
-      overflow: auto; padding: 1rem; border-radius: 16px;
-      background: var(--panel); border: 1px solid var(--line);
-      backdrop-filter: blur(18px); box-shadow: 0 18px 50px rgba(0,0,0,.5);
-      display: none; flex-direction: column; gap: 0.75rem;
-      transform: translateX(12px); opacity: 0; transition: .25s ease;
+    .pin {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #fff; border: 3px solid #2ee6ff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.4), 0 0 0 6px rgba(46,230,255,.18);
+      transform: translate(-50%, -50%);
+      cursor: pointer;
     }
-    .panel.open { display: flex; transform: none; opacity: 1; }
-    .panel-head { display: flex; justify-content: space-between; gap: 0.5rem; }
-    .kicker { margin: 0; color: var(--magenta); font-size: 0.65rem; letter-spacing: 0.14em; }
-    .panel h2 { margin: 0.2rem 0 0; font-family: var(--font-d); font-size: 1.15rem; }
-    .tagline { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
-    .close {
-      width: 2rem; height: 2rem; border-radius: 8px; border: 1px solid var(--line);
-      background: transparent; color: var(--muted); font-size: 1.2rem; cursor: pointer;
+    .pin.sel {
+      width: 26px; height: 26px; border-color: #ff4d8d;
+      box-shadow: 0 8px 20px rgba(255,77,141,.45), 0 0 0 8px rgba(255,77,141,.16);
+      animation: pulse 1.6s ease-in-out infinite;
     }
-    .stats { display: grid; grid-template-columns: 1.35fr 1fr .75fr; gap: 0.4rem; }
-    .stats > div {
-      padding: 0.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
-      background: rgba(255,255,255,.03);
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 8px 20px rgba(255,77,141,.45), 0 0 0 8px rgba(255,77,141,.16); }
+      50% { box-shadow: 0 8px 20px rgba(255,77,141,.55), 0 0 0 14px rgba(255,77,141,.08); }
     }
-    .stats span { display: block; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    .stats strong { font-size: 0.88rem; }
-    .delta { font-size: 0.7rem; }
-    .delta.up { color: var(--lime); }
-    .sec h3 {
-      margin: 0 0 0.35rem; font-family: var(--font-d); font-size: 0.68rem;
-      letter-spacing: 0.12em; color: var(--cyan); text-transform: uppercase;
+    .pin-label {
+      position: absolute; left: 50%; top: -22px; transform: translateX(-50%);
+      white-space: nowrap; font: 700 11px var(--font); color: #fff;
+      text-shadow: 0 1px 6px #000; pointer-events: none;
     }
-    .chips, .conds, .phases { list-style: none; margin: 0; padding: 0; }
-    .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-    .chips li {
-      font-size: 0.72rem; padding: 0.25rem 0.55rem; border-radius: 999px;
-      border: 1px solid rgba(57,255,136,.35); color: var(--lime);
-    }
-    .conds li { position: relative; padding-left: 0.85rem; font-size: 0.85rem; margin: 0.28rem 0; }
-    .conds li::before {
-      content: ''; position: absolute; left: 0; top: 0.45rem; width: 0.3rem; height: 0.3rem;
-      border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
-    }
-    .phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
-    .phases li { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: var(--muted); }
-    .phases li.done { color: var(--text); }
-    .phases li.cur { color: var(--lime); }
-    .dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #334; flex-shrink: 0; }
-    .done .dot { background: var(--cyan); }
-    .cur .dot { background: var(--lime); box-shadow: 0 0 8px var(--lime); }
-    .future {
-      padding: 0.65rem 0.7rem; border-left: 2px solid var(--magenta);
-      background: rgba(255,43,214,.07); color: var(--muted); font-size: 0.85rem; line-height: 1.4;
-    }
-    .cta {
-      margin-top: auto; border: 0; border-radius: 12px; padding: 0.85rem;
-      background: linear-gradient(90deg, #0099aa, var(--cyan) 45%, #7a3cff);
-      color: #041018; font-family: var(--font-d); font-size: 0.75rem;
-      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
-      box-shadow: 0 0 24px rgba(0,240,255,.3);
-    }
-    .hint {
-      text-align: center; font-size: 0.72rem; color: var(--muted);
-      text-shadow: 0 1px 8px #000;
-    }
-    .legend {
-      position: absolute; z-index: 2; left: 0.75rem; bottom: 7.5rem;
-      padding: 0.55rem 0.7rem; border-radius: 12px;
-      background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(12px);
-      font-size: 0.68rem; color: var(--muted); line-height: 1.55;
-    }
-    .legend b { color: var(--text); }
-    .sw { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 2px; margin-right: 0.25rem; vertical-align: middle; }
 
-    @media (max-width: 720px) {
-      .panel {
-        left: 0; right: 0; top: auto; bottom: 0; width: 100%;
-        max-height: min(52vh, 420px); border-radius: 18px 18px 0 0;
-        transform: translateY(16px);
-      }
-      .panel.open { transform: none; }
-      .legend { display: none; }
-      .bottom { width: 100%; }
-      .brand h1 { font-size: 1.05rem; }
+    @media (min-width: 860px) {
+      .sheet { left: auto; right: 16px; top: 86px; bottom: auto; width: 360px; max-height: calc(100% - 110px); overflow: auto; }
+      .sheet.exp .more, .sheet.open .more { display: block; }
+      .grab { display: none; }
+      body.has-sheet .tl { display: block; bottom: max(12px, env(safe-area-inset-bottom)); left: 16px; right: auto; width: min(420px, calc(100% - 400px)); }
+      .legend { bottom: 118px; }
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-
   <div class="legend" id="legend">
-    <div><span class="sw" style="background:#00f0ff"></span><b>Здания</b> — тапни объект</div>
-    <div><span class="sw" style="background:#39ff88"></span>Зелёные зоны</div>
-    <div><span class="sw" style="background:#ffb020"></span>LRT трасса</div>
-    <div><span class="sw" style="background:#ff2bd6"></span>Мега-мечеть</div>
+    <div><i style="background:#8b9bb0"></i>Городские здания</div>
+    <div><i style="background:#2ee6ff"></i>Объект в продаже</div>
+    <div><i style="background:#ff4d8d"></i>Выбранный дом</div>
   </div>
-
-  <aside class="panel" id="panel"></aside>
-
-  <div class="chrome">
-    <div class="top">
+  <aside class="sheet" id="sheet"></aside>
+  <div class="hud">
+    <div class="topbar">
       <div class="brand">
-        <div class="mark"></div>
-        <div>
-          <h1>NEXUS-7</h1>
-          <p>Neon Arc Quarter · fictional</p>
-        </div>
+        <div class="logo"></div>
+        <div><strong>NEXUS-7</strong><small>Астана · объекты на карте</small></div>
       </div>
-      <div class="layers" id="layers">
-        <button data-l="green" class="on">Зелень</button>
+      <div class="chips" id="chips">
+        <button data-l="green" class="on">Парки</button>
         <button data-l="lrt" class="on">LRT</button>
-        <button data-l="mosque" class="on">Мечеть</button>
+        <button data-l="sale" class="on">Продажа</button>
       </div>
     </div>
-
-    <div class="bottom">
-      <div class="timeline">
-        <div class="tl-top">
-          <button class="play" id="play" type="button">▶</button>
-          <div>
-            <div class="yn" id="yn">2026</div>
-            <div class="ye" id="ye"></div>
-          </div>
-        </div>
-        <input type="range" id="range" min="2024" max="2032" step="1" value="2026" />
-        <div class="ticks" id="ticks"></div>
+    <div class="tl" id="tl">
+      <div class="tl-top">
+        <button class="play" id="play" type="button">▶</button>
+        <div><div class="yn" id="yn">2026</div><div class="ye" id="ye"></div></div>
       </div>
-      <p class="hint">Настоящая карта · крути год · жми здание</p>
+      <input type="range" id="range" min="2024" max="2032" step="1" value="2026" />
+      <div class="years" id="years"></div>
     </div>
   </div>
 
 <script>
 const YEARS = [2024,2025,2026,2027,2028,2029,2030,2031,2032];
 const EVENTS = {
-  2024:'Старт квартала · мечеть уже на карте',
-  2025:'Emerald Spine появляется',
-  2026:'Чертёж LRT ложится на улицы',
-  2027:'Pulse Park · LRT на стройке',
-  2028:'Парк расширяется · North Spire pre-sale',
-  2029:'Пик сдачи жилых корпусов',
-  2030:'LRT открыт · цены переоцениваются',
-  2031:'Canal strip saturated',
-  2032:'Планы второй фазы аркологии'
+  2024:'Старт продаж в квартале',
+  2025:'Появляются парковые зоны',
+  2026:'LRT рисуют по улицам',
+  2027:'Новые корпуса выходят на карту',
+  2028:'North Spire — pre-sale',
+  2029:'Пик сдачи',
+  2030:'LRT открыт, цены переоценены',
+  2031:'Рынок насыщается',
+  2032:'Вторая очередь'
 };
 const PHASE = {planned:'План',excavation:'Котлован',structure:'Каркас',finishing:'Отделка',handover:'Сдача',sold:'Продано'};
-const AM = {lrt:'LRT рядом',mosque:'Мега-мечеть',green:'Зелёная зона',market:'Базар',school:'Школа'};
 const ORDER = ['planned','excavation','structure','finishing','handover','sold'];
+const AM = {lrt:'LRT рядом',mosque:'Мечеть рядом',green:'Парк',market:'Ритейл',school:'Школа'};
 
-/* Fictional Neo-Astana pocket around real city fabric */
-const C = { lng: 71.4304, lat: 51.1282 };
-
-function ring(dx, dy, w, h) {
-  const [[a,b],[c,d],[e,f],[g,hh]] = [
-    [C.lng+dx, C.lat+dy],
-    [C.lng+dx+w, C.lat+dy],
-    [C.lng+dx+w, C.lat+dy+h],
-    [C.lng+dx, C.lat+dy+h],
-  ];
-  return [[a,b],[c,d],[e,f],[g,hh],[a,b]];
-}
-function poly(coords) {
-  return { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: {} };
-}
-
-const buildings = [
-  {
-    id:'b1', name:'Prism Tower', tag:'Стеклянный хай-райз у LRT',
-    area:420, floors:28, am:['lrt','green'],
-    cond:['Первый взнос от 20%','Рассрочка до сдачи без %','Вид на бульвар + LRT'],
-    appear:2024,
+const LISTINGS = [
+  {id:'b1', sale:3, name:'Prism Tower', tag:'Хай-райз у бульвара', area:420, floors:28, am:['lrt','green'],
+    cond:['Первый взнос от 20%','Рассрочка до сдачи без %','Вид на бульвар'],
+    appear:2024, future:'К 2030 — sky-bridge к станции LRT',
     phase:{2024:'excavation',2025:'structure',2026:'structure',2027:'finishing',2028:'handover',2029:'sold',2030:'sold',2031:'sold',2032:'sold'},
-    prices:{2024:480,2025:520,2026:610,2027:690,2028:780,2029:820,2030:860,2031:900,2032:940},
-    future:'К 2030 — ритейл-подиум и sky-bridge к станции LRT',
-    coords: ring(-0.012, 0.004, 0.0045, 0.0032)
-  },
-  {
-    id:'b2', name:'Mosque Gate', tag:'Лофты у Aurora Mosque',
-    area:95, floors:12, am:['mosque','green','market'],
-    cond:['Семейные 2–4 комн.','Закрытый двор','Шариат-friendly escrow'],
-    appear:2024,
+    prices:{2024:480,2025:520,2026:610,2027:690,2028:780,2029:820,2030:860,2031:900,2032:940}},
+  {id:'b2', sale:4, name:'Mosque Gate', tag:'Лофты у мечети', area:95, floors:12, am:['mosque','green','market'],
+    cond:['Семейные 2–4 комн.','Закрытый двор','Эскроу'],
+    appear:2024, future:'После 2029 — wellness-этаж',
     phase:{2024:'planned',2025:'excavation',2026:'structure',2027:'finishing',2028:'handover',2029:'handover',2030:'sold',2031:'sold',2032:'sold'},
-    prices:{2024:390,2025:410,2026:470,2027:540,2028:600,2029:640,2030:680,2031:710,2032:740},
-    future:'После 2029 — wellness-этаж и зелёная терраса',
-    coords: ring(-0.006, 0.008, 0.004, 0.0028)
-  },
-  {
-    id:'b3', name:'Canal Strip', tag:'Ритейл + апартаменты у воды',
-    area:160, floors:8, am:['green','market'],
-    cond:['Коммерция на 1 этаже','Аренда до сдачи ок','Льгота 2 года'],
-    appear:2025,
+    prices:{2024:390,2025:410,2026:470,2027:540,2028:600,2029:640,2030:680,2031:710,2032:740}},
+  {id:'b3', sale:1, name:'Canal Strip', tag:'Ритейл у воды', area:160, floors:8, am:['green','market'],
+    cond:['Коммерция 1 этаж','Аренда до сдачи','Льгота 2 года'],
+    appear:2025, future:'К 2031 — food-court у набережной',
     phase:{2025:'planned',2026:'excavation',2027:'structure',2028:'finishing',2029:'handover',2030:'handover',2031:'sold',2032:'sold'},
-    prices:{2025:350,2026:380,2027:430,2028:510,2029:580,2030:620,2031:660,2032:700},
-    future:'К 2031 — food-court у набережной',
-    coords: ring(-0.009, -0.002, 0.0055, 0.0026)
-  },
-  {
-    id:'b4', name:'LRT Hub', tag:'Жить над станцией',
-    area:72, floors:18, am:['lrt','green','school'],
-    cond:['5 мин пешком до LRT','Smart-home','Кешбек 3% до 2027'],
-    appear:2026,
+    prices:{2025:350,2026:380,2027:430,2028:510,2029:580,2030:620,2031:660,2032:700}},
+  {id:'b4', sale:2, name:'LRT Hub', tag:'Над будущей станцией', area:72, floors:18, am:['lrt','green','school'],
+    cond:['5 мин до LRT','Smart-home','Кешбек 3% до 2027'],
+    appear:2026, future:'После LRT — переоценка +20–25%',
     phase:{2026:'planned',2027:'excavation',2028:'structure',2029:'finishing',2030:'handover',2031:'handover',2032:'sold'},
-    prices:{2026:520,2027:560,2028:640,2029:720,2030:800,2031:850,2032:910},
-    future:'После открытия LRT — переоценка +20–25%',
-    coords: ring(0.001, 0.003, 0.0048, 0.003)
-  },
-  {
-    id:'b5', name:'Pulse Villas', tag:'Таунхаусы у парка',
-    area:210, floors:3, am:['green','school'],
-    cond:['Участок 80 м²','2 парковки','Лимит этажности'],
-    appear:2027,
+    prices:{2026:520,2027:560,2028:640,2029:720,2030:800,2031:850,2032:910}},
+  {id:'b5', sale:5, name:'Pulse Villas', tag:'Тихий квартал у парка', area:210, floors:3, am:['green','school'],
+    cond:['Участок 80 м²','2 парковки','Низкая этажность'],
+    appear:2027, future:'К 2032 — велодорожка к мечети',
     phase:{2027:'planned',2028:'excavation',2029:'structure',2030:'finishing',2031:'handover',2032:'handover'},
-    prices:{2027:450,2028:480,2029:540,2030:610,2031:680,2032:720},
-    future:'К 2032 — велодорожка к мечети',
-    coords: ring(0.008, -0.001, 0.005, 0.0028)
-  },
-  {
-    id:'b6', name:'North Spire', tag:'Флагман квартала 2030+',
-    area:110, floors:42, am:['lrt','mosque','green','market'],
-    cond:['Pre-sale до 2028','Мин. 2 комнаты','Консьерж + sky lounge'],
-    appear:2028,
+    prices:{2027:450,2028:480,2029:540,2030:610,2031:680,2032:720}},
+  {id:'b6', sale:0, name:'North Spire', tag:'Флагман севера', area:110, floors:42, am:['lrt','mosque','green'],
+    cond:['Pre-sale до 2028','От 2 комнат','Sky lounge'],
+    appear:2028, future:'2033–35: вторая башня',
     phase:{2028:'planned',2029:'excavation',2030:'structure',2031:'structure',2032:'finishing'},
-    prices:{2028:700,2029:760,2030:850,2031:940,2032:1050},
-    future:'2033–35: башня-близнец и воздушный сад',
-    coords: ring(0.004, 0.01, 0.0042, 0.0034)
-  }
+    prices:{2028:700,2029:760,2030:850,2031:940,2032:1050}}
 ];
 
-const mosqueCoords = ring(-0.011, 0.011, 0.0055, 0.004);
-const greenCore = ring(-0.002, 0.006, 0.007, 0.005);
-const greenCoreBig = ring(-0.004, 0.005, 0.01, 0.007);
-const greenEast = ring(0.008, 0.006, 0.006, 0.0045);
-const lrtLine = {
-  type: 'Feature',
-  geometry: {
-    type: 'LineString',
-    coordinates: [
-      [C.lng - 0.018, C.lat + 0.001],
-      [C.lng - 0.01, C.lat + 0.004],
-      [C.lng - 0.002, C.lat + 0.0055],
-      [C.lng + 0.006, C.lat + 0.004],
-      [C.lng + 0.014, C.lat + 0.002],
-      [C.lng + 0.02, C.lat + 0.005]
-    ]
-  },
-  properties: {}
-};
-
-const PHASE_COLOR = {
-  planned: '#8899aa',
-  excavation: '#ffb020',
-  structure: '#00f0ff',
-  finishing: '#66ccff',
-  handover: '#39ff88',
-  sold: '#ff2bd6'
-};
-
-let year = 2026, selected = 'b1', playing = false, timer = null;
-const layersOn = { green: true, lrt: true, mosque: true };
-
-function fmt(p){ return p >= 1000 ? (p/1000).toFixed(2) + ' млн ₸/м²' : p + 'k ₸/м²'; }
-
-function buildingsFC() {
-  return {
-    type: 'FeatureCollection',
-    features: buildings.filter(b => year >= b.appear).map(b => {
-      const ph = b.phase[year];
-      return {
-        type: 'Feature',
-        properties: {
-          id: b.id,
-          name: b.name,
-          phase: ph,
-          color: PHASE_COLOR[ph] || '#00f0ff',
-          selected: b.id === selected ? 1 : 0,
-          label: b.name.split(' ')[0] + '\n' + (PHASE[ph] || '')
-        },
-        geometry: { type: 'Polygon', coordinates: [b.coords] }
-      };
-    })
-  };
-}
-
-function greenFC() {
-  const feats = [];
-  if (year >= 2025) feats.push({ ...poly(year >= 2028 ? greenCoreBig : greenCore), properties: { id: 'g1' } });
-  if (year >= 2027) feats.push({ ...poly(greenEast), properties: { id: 'g2' } });
-  return { type: 'FeatureCollection', features: feats };
-}
-
-function mosqueFC() {
-  return {
-    type: 'FeatureCollection',
-    features: year >= 2024 ? [{ ...poly(mosqueCoords), properties: { name: 'Aurora Mega Mosque' } }] : []
-  };
-}
-
-function lrtFC() {
-  return {
-    type: 'FeatureCollection',
-    features: year >= 2026 ? [{ ...lrtLine, properties: { open: year >= 2030 ? 1 : 0 } }] : []
-  };
-}
+let year = 2026, selected = null, playing = false, timer = null, city = null, markers = [];
+const layersOn = { green: true, lrt: true, sale: true };
+const fmt = p => p >= 1000 ? (p/1000).toFixed(2) + ' млн ₸/м²' : p + 'k ₸/м²';
 
 const map = new maplibregl.Map({
   container: 'map',
   style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-  center: [C.lng, C.lat],
-  zoom: 13.6,
-  pitch: 48,
-  bearing: -18,
-  antialias: true
+  center: [71.423, 51.129],
+  zoom: 14.15,
+  pitch: 52,
+  bearing: -22,
+  antialias: true,
+  maxPitch: 60
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-map.addControl(new maplibregl.ScaleControl({ maxWidth: 100 }), 'bottom-left');
 
-map.on('load', () => {
-  // subtle cyberpunk tint via fog-like atmosphere if supported
-  try {
-    map.setPaintProperty('background', 'background-color', '#05070d');
-  } catch (_) {}
+function listingByYear() {
+  return LISTINGS.filter(b => year >= b.appear);
+}
 
-  map.addSource('green', { type: 'geojson', data: greenFC() });
-  map.addSource('mosque', { type: 'geojson', data: mosqueFC() });
+function saleFC(onlyId) {
+  const feats = [];
+  for (const b of listingByYear()) {
+    if (onlyId && b.id !== onlyId) continue;
+    const s = city.sale[b.sale];
+    const ph = b.phase[year];
+    feats.push({
+      type: 'Feature',
+      properties: { id: b.id, name: b.name, phase: ph, h: s.h * (ph === 'planned' ? 0.35 : ph === 'excavation' ? 0.5 : ph === 'structure' ? 0.8 : 1) },
+      geometry: { type: 'Polygon', coordinates: [s.c] }
+    });
+  }
+  return { type: 'FeatureCollection', features: feats };
+}
+
+function cityFC() {
+  return {
+    type: 'FeatureCollection',
+    features: city.ctx.map(b => ({
+      type: 'Feature',
+      properties: { h: b.h },
+      geometry: { type: 'Polygon', coordinates: [b.c] }
+    }))
+  };
+}
+
+function parksFC() {
+  if (year < 2025) return { type: 'FeatureCollection', features: [] };
+  // soft parks near real clusters — organic-ish rings
+  const parks = year >= 2028 ? [
+    [[71.4215,51.1298],[71.4258,51.1292],[71.4266,51.1320],[71.4222,51.1328],[71.4215,51.1298]],
+    [[71.4162,51.1248],[71.4198,51.1242],[71.4204,51.1266],[71.4168,51.1270],[71.4162,51.1248]]
+  ] : [
+    [[71.4222,51.1302],[71.4250,51.1298],[71.4254,51.1318],[71.4226,51.1322],[71.4222,51.1302]]
+  ];
+  return { type: 'FeatureCollection', features: parks.map(c => ({ type:'Feature', geometry:{type:'Polygon',coordinates:[c]}, properties:{} })) };
+}
+
+function lrtFC() {
+  if (year < 2026) return { type: 'FeatureCollection', features: [] };
+  return {
+    type: 'FeatureCollection',
+    features: [{
+      type: 'Feature',
+      properties: { open: year >= 2030 ? 1 : 0 },
+      geometry: { type: 'LineString', coordinates: [
+        [71.412, 51.123], [71.417, 51.126], [71.422, 51.129], [71.428, 51.131], [71.434, 51.133]
+      ]}
+    }]
+  };
+}
+
+function clearMarkers() {
+  markers.forEach(m => m.remove());
+  markers = [];
+}
+
+function placePins() {
+  clearMarkers();
+  if (!layersOn.sale) return;
+  for (const b of listingByYear()) {
+    const s = city.sale[b.sale];
+    const el = document.createElement('div');
+    el.innerHTML = `<div class="pin-label">${b.name}</div><div class="pin ${selected===b.id?'sel':''}"></div>`;
+    el.style.position = 'relative';
+    el.onclick = (e) => { e.stopPropagation(); select(b.id, true); };
+    const mk = new maplibregl.Marker({ element: el, anchor: 'center' })
+      .setLngLat([s.cx, s.cy])
+      .addTo(map);
+    markers.push(mk);
+  }
+}
+
+function select(id, fly) {
+  selected = id;
+  document.body.classList.add('has-sheet');
+  syncLayers();
+  placePins();
+  renderSheet();
+  if (fly) {
+    const b = LISTINGS.find(x => x.id === id);
+    const s = city.sale[b.sale];
+    map.easeTo({ center: [s.cx, s.cy], zoom: Math.max(map.getZoom(), 15.2), pitch: 56, duration: 700 });
+  }
+}
+
+function closeSheet() {
+  selected = null;
+  document.body.classList.remove('has-sheet');
+  document.getElementById('sheet').classList.remove('open', 'exp');
+  syncLayers();
+  placePins();
+}
+
+function renderSheet() {
+  const b = LISTINGS.find(x => x.id === selected);
+  const el = document.getElementById('sheet');
+  if (!b || year < b.appear) { closeSheet(); return; }
+  const ph = b.phase[year], pr = b.prices[year], prev = b.prices[year-1];
+  const delta = pr && prev ? (((pr-prev)/prev)*100).toFixed(1) : null;
+  const idx = ORDER.indexOf(ph);
+  el.classList.add('open');
+  el.innerHTML = `
+    <div class="grab"></div>
+    <button class="x" id="cls" type="button">×</button>
+    <div class="peek" id="peek">
+      <div class="peek-row">
+        <div>
+          <p class="kicker">${PHASE[ph]} · ${year}</p>
+          <h2>${b.name}</h2>
+          <p class="sub">${b.tag}</p>
+        </div>
+        <div class="price">
+          <b>${pr ? fmt(pr) : '—'}</b>
+          ${delta != null ? `<span>${delta>=0?'+':''}${delta}% за год</span>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="more">
+      <div class="stats">
+        <div><span>Площадь</span><b>${b.area} м²</b></div>
+        <div><span>Этажей</span><b>${b.floors}</b></div>
+        <div><span>Статус</span><b>${PHASE[ph]}</b></div>
+      </div>
+      <ol class="phases">${ORDER.map((p,i)=>`<li class="${i<=idx?'done':''} ${p===ph?'cur':''}">${PHASE[p]}</li>`).join('')}</ol>
+      <div class="tags">${b.am.map(a=>`<span>${AM[a]}</span>`).join('')}</div>
+      <ul class="conds">${b.cond.map(c=>`<li>${c}</li>`).join('')}</ul>
+      <div class="next"><b>Что дальше.</b> ${b.future}</div>
+      <button class="cta" type="button">Оставить заявку</button>
+    </div>`;
+  document.getElementById('cls').onclick = (e) => { e.stopPropagation(); closeSheet(); };
+  document.getElementById('peek').onclick = () => el.classList.toggle('exp');
+}
+
+function syncLayers() {
+  if (!map.getSource('city')) return;
+  map.getSource('sale').setData(saleFC());
+  map.getSource('sel').setData(selected ? saleFC(selected) : {type:'FeatureCollection',features:[]});
+  map.getSource('parks').setData(parksFC());
+  map.getSource('lrt').setData(lrtFC());
+  const vis = (id, on) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
+  vis('parks-fill', layersOn.green); vis('parks-line', layersOn.green);
+  vis('lrt-glow', layersOn.lrt); vis('lrt-line', layersOn.lrt);
+  vis('sale-3d', layersOn.sale); vis('sale-line', layersOn.sale);
+  vis('sel-3d', layersOn.sale); vis('sel-line', layersOn.sale); vis('sel-glow', layersOn.sale);
+  if (map.getLayer('lrt-line')) {
+    map.setPaintProperty('lrt-line', 'line-dasharray', year >= 2030 ? [1, 0] : [2, 1.4]);
+    map.setPaintProperty('lrt-line', 'line-color', year >= 2030 ? '#2ee6ff' : '#ffb020');
+    map.setPaintProperty('lrt-glow', 'line-color', year >= 2030 ? '#2ee6ff' : '#ffb020');
+  }
+}
+
+function sync() {
+  document.getElementById('yn').textContent = year;
+  document.getElementById('ye').textContent = EVENTS[year];
+  document.getElementById('range').value = year;
+  document.getElementById('range').style.setProperty('--p', ((year-2024)/8*100)+'%');
+  [...document.querySelectorAll('.years button')].forEach(t => t.classList.toggle('on', +t.dataset.y === year));
+  if (selected && year < LISTINGS.find(x=>x.id===selected).appear) closeSheet();
+  syncLayers();
+  placePins();
+  if (selected) renderSheet();
+}
+
+map.on('load', async () => {
+  city = await fetch('./city.json').then(r => r.json());
+
+  map.addSource('city', { type: 'geojson', data: cityFC() });
+  map.addSource('sale', { type: 'geojson', data: saleFC() });
+  map.addSource('sel', { type: 'geojson', data: { type:'FeatureCollection', features: [] } });
+  map.addSource('parks', { type: 'geojson', data: parksFC() });
   map.addSource('lrt', { type: 'geojson', data: lrtFC() });
-  map.addSource('buildings', { type: 'geojson', data: buildingsFC() });
 
   map.addLayer({
-    id: 'green-fill', type: 'fill', source: 'green',
+    id: 'city-3d', type: 'fill-extrusion', source: 'city',
     paint: {
-      'fill-color': '#39ff88',
-      'fill-opacity': 0.22
+      'fill-extrusion-color': '#2a3344',
+      'fill-extrusion-height': ['get', 'h'],
+      'fill-extrusion-base': 0,
+      'fill-extrusion-opacity': 0.72,
+      'fill-extrusion-vertical-gradient': true
     }
-  });
-  map.addLayer({
-    id: 'green-line', type: 'line', source: 'green',
-    paint: { 'line-color': '#39ff88', 'line-width': 2, 'line-opacity': 0.85 }
   });
 
   map.addLayer({
-    id: 'mosque-fill', type: 'fill', source: 'mosque',
-    paint: { 'fill-color': '#ff2bd6', 'fill-opacity': 0.28 }
+    id: 'parks-fill', type: 'fill', source: 'parks',
+    paint: { 'fill-color': '#1f6b45', 'fill-opacity': 0.28 }
   });
   map.addLayer({
-    id: 'mosque-line', type: 'line', source: 'mosque',
-    paint: { 'line-color': '#ff2bd6', 'line-width': 2.5, 'line-opacity': 0.95 }
-  });
-  map.addLayer({
-    id: 'mosque-label', type: 'symbol', source: 'mosque',
-    layout: {
-      'text-field': 'MEGA MOSQUE',
-      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-      'text-size': 12,
-      'text-letter-spacing': 0.08
-    },
-    paint: {
-      'text-color': '#ff9de8',
-      'text-halo-color': '#1a0420',
-      'text-halo-width': 1.2
-    }
+    id: 'parks-line', type: 'line', source: 'parks',
+    paint: { 'line-color': '#3ee6a0', 'line-width': 1.4, 'line-opacity': 0.7 }
   });
 
   map.addLayer({
     id: 'lrt-glow', type: 'line', source: 'lrt',
-    paint: {
-      'line-color': ['case', ['==', ['get', 'open'], 1], '#00f0ff', '#ffb020'],
-      'line-width': 10,
-      'line-opacity': 0.25,
-      'line-blur': 1.2
-    }
+    paint: { 'line-color': '#ffb020', 'line-width': 12, 'line-opacity': 0.18, 'line-blur': 1.2 }
   });
   map.addLayer({
     id: 'lrt-line', type: 'line', source: 'lrt',
-    paint: {
-      'line-color': ['case', ['==', ['get', 'open'], 1], '#00f0ff', '#ffb020'],
-      'line-width': 3.5,
-      'line-dasharray': ['case', ['==', ['get', 'open'], 1], ['literal', [1, 0]], ['literal', [2, 1.5]]]
-    }
+    paint: { 'line-color': '#ffb020', 'line-width': 3 }
   });
 
   map.addLayer({
-    id: 'buildings-fill', type: 'fill-extrusion', source: 'buildings',
+    id: 'sale-3d', type: 'fill-extrusion', source: 'sale',
     paint: {
-      'fill-extrusion-color': ['get', 'color'],
-      'fill-extrusion-height': [
-        'case',
-        ['==', ['get', 'phase'], 'planned'], 8,
-        ['==', ['get', 'phase'], 'excavation'], 18,
-        ['==', ['get', 'phase'], 'structure'], 45,
-        ['==', ['get', 'phase'], 'finishing'], 70,
-        ['==', ['get', 'phase'], 'handover'], 90,
-        55
-      ],
-      'fill-extrusion-base': 0,
-      'fill-extrusion-opacity': 0.82
+      'fill-extrusion-color': '#4a6d82',
+      'fill-extrusion-height': ['get', 'h'],
+      'fill-extrusion-opacity': 0.92,
+      'fill-extrusion-vertical-gradient': true
     }
   });
   map.addLayer({
-    id: 'buildings-outline', type: 'line', source: 'buildings',
+    id: 'sale-line', type: 'line', source: 'sale',
+    paint: { 'line-color': '#2ee6ff', 'line-width': 1.6, 'line-opacity': 0.85 }
+  });
+
+  map.addLayer({
+    id: 'sel-3d', type: 'fill-extrusion', source: 'sel',
     paint: {
-      'line-color': ['get', 'color'],
-      'line-width': ['case', ['==', ['get', 'selected'], 1], 4, 1.5],
-      'line-opacity': 0.95
+      'fill-extrusion-color': '#2ee6ff',
+      'fill-extrusion-height': ['+', ['get', 'h'], 8],
+      'fill-extrusion-opacity': 0.55,
+      'fill-extrusion-vertical-gradient': true
     }
   });
   map.addLayer({
-    id: 'buildings-label', type: 'symbol', source: 'buildings',
-    layout: {
-      'text-field': ['get', 'name'],
-      'text-size': 11,
-      'text-offset': [0, 1.1],
-      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Regular'],
-      'text-anchor': 'top'
-    },
-    paint: {
-      'text-color': '#e8f4ff',
-      'text-halo-color': '#05070d',
-      'text-halo-width': 1.4
-    }
+    id: 'sel-glow', type: 'line', source: 'sel',
+    paint: { 'line-color': '#ff4d8d', 'line-width': 10, 'line-opacity': 0.22, 'line-blur': 1.4 }
+  });
+  map.addLayer({
+    id: 'sel-line', type: 'line', source: 'sel',
+    paint: { 'line-color': '#ffffff', 'line-width': 2.4, 'line-opacity': 0.95 }
   });
 
-  map.on('click', 'buildings-fill', (e) => {
-    const f = e.features && e.features[0];
-    if (!f) return;
-    selected = f.properties.id;
-    sync();
-    map.flyTo({
-      center: e.lngLat,
-      zoom: Math.max(map.getZoom(), 14.5),
-      pitch: 55,
-      duration: 900
-    });
+  map.on('click', 'sale-3d', (e) => {
+    const id = e.features?.[0]?.properties?.id;
+    if (id) select(id, true);
   });
-  map.on('mouseenter', 'buildings-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'buildings-fill', () => { map.getCanvas().style.cursor = ''; });
-
-  // slow cinematic drift
-  let t0 = performance.now();
-  function drift(now) {
-    if (!map.isMoving() && !selected) {
-      const t = (now - t0) / 1000;
-      map.setBearing(-18 + Math.sin(t / 18) * 4);
-    }
-    requestAnimationFrame(drift);
-  }
-  requestAnimationFrame(drift);
+  map.on('click', (e) => {
+    const hits = map.queryRenderedFeatures(e.point, { layers: ['sale-3d'] });
+    if (!hits.length) closeSheet();
+  });
+  map.on('mouseenter', 'sale-3d', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'sale-3d', () => { map.getCanvas().style.cursor = ''; });
 
   sync();
 });
 
-function setLayerVis(id, on) {
-  if (!map.getLayer(id)) return;
-  map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
-}
-
-function syncMapData() {
-  if (!map.getSource('buildings')) return;
-  map.getSource('buildings').setData(buildingsFC());
-  map.getSource('green').setData(greenFC());
-  map.getSource('mosque').setData(mosqueFC());
-  map.getSource('lrt').setData(lrtFC());
-  setLayerVis('green-fill', layersOn.green);
-  setLayerVis('green-line', layersOn.green);
-  setLayerVis('mosque-fill', layersOn.mosque);
-  setLayerVis('mosque-line', layersOn.mosque);
-  setLayerVis('mosque-label', layersOn.mosque);
-  setLayerVis('lrt-glow', layersOn.lrt);
-  setLayerVis('lrt-line', layersOn.lrt);
-}
-
-function renderPanel() {
-  const pan = document.getElementById('panel');
-  const b = buildings.find(x => x.id === selected);
-  if (!b || year < b.appear) {
-    pan.classList.remove('open');
-    return;
-  }
-  const ph = b.phase[year];
-  const pr = b.prices[year];
-  const prev = b.prices[year - 1];
-  const delta = pr && prev ? (((pr - prev) / prev) * 100).toFixed(1) : null;
-  const idx = ORDER.indexOf(ph);
-  pan.classList.add('open');
-  pan.innerHTML = `
-    <div class="panel-head">
-      <div>
-        <p class="kicker">OBJECT // ${b.id.toUpperCase()}</p>
-        <h2>${b.name}</h2>
-        <p class="tagline">${b.tag}</p>
-      </div>
-      <button class="close" id="cls" type="button" aria-label="Закрыть">×</button>
-    </div>
-    <div class="stats">
-      <div>
-        <span>Цена ${year}</span>
-        <strong>${pr ? fmt(pr) : '—'}</strong>
-        ${delta != null ? `<div class="delta ${delta >= 0 ? 'up' : ''}">${delta >= 0 ? '+' : ''}${delta}% YoY</div>` : ''}
-      </div>
-      <div><span>Площадь</span><strong>${b.area} м²</strong></div>
-      <div><span>Этажей</span><strong>${b.floors}</strong></div>
-    </div>
-    <div class="sec">
-      <h3>Фазы стройки</h3>
-      <ol class="phases">${ORDER.map((p,i)=>`<li class="${i<=idx?'done':''} ${p===ph?'cur':''}"><span class="dot"></span>${PHASE[p]}</li>`).join('')}</ol>
-    </div>
-    <div class="sec"><h3>Рядом</h3><ul class="chips">${b.am.map(a=>`<li>${AM[a]}</li>`).join('')}</ul></div>
-    <div class="sec"><h3>Условия</h3><ul class="conds">${b.cond.map(c=>`<li>${c}</li>`).join('')}</ul></div>
-    <div class="future"><b style="color:var(--magenta)">Что дальше</b><br>${b.future}</div>
-    <button class="cta" type="button">Забронировать интерес</button>
-  `;
-  document.getElementById('cls').onclick = () => { selected = null; sync(); };
-}
-
-function sync() {
-  const progress = ((year - 2024) / 8) * 100;
-  document.getElementById('range').style.setProperty('--p', progress + '%');
-  document.getElementById('yn').textContent = year;
-  document.getElementById('ye').textContent = EVENTS[year];
-  document.getElementById('range').value = year;
-  [...document.querySelectorAll('.ticks button')].forEach(t => t.classList.toggle('on', +t.dataset.y === year));
-  syncMapData();
-  renderPanel();
-}
-
 YEARS.forEach(y => {
   const b = document.createElement('button');
-  b.type = 'button';
-  b.dataset.y = y;
-  b.textContent = y;
+  b.type = 'button'; b.dataset.y = y; b.textContent = y;
   if (y === year) b.classList.add('on');
   b.onclick = () => { year = y; sync(); };
-  document.getElementById('ticks').appendChild(b);
+  document.getElementById('years').appendChild(b);
 });
-
-document.getElementById('range').oninput = (e) => { year = +e.target.value; sync(); };
-document.getElementById('layers').onclick = (e) => {
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const k = btn.dataset.l;
-  layersOn[k] = !layersOn[k];
-  btn.classList.toggle('on', layersOn[k]);
-  syncMapData();
+document.getElementById('range').oninput = e => { year = +e.target.value; sync(); };
+document.getElementById('chips').onclick = e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  layersOn[btn.dataset.l] = !layersOn[btn.dataset.l];
+  btn.classList.toggle('on', layersOn[btn.dataset.l]);
+  sync();
 };
 document.getElementById('play').onclick = () => {
   playing = !playing;
   document.getElementById('play').textContent = playing ? '❚❚' : '▶';
-  if (playing) {
-    timer = setInterval(() => {
-      if (year >= 2032) {
-        playing = false;
-        document.getElementById('play').textContent = '▶';
-        clearInterval(timer);
-        return;
-      }
-      year += 1;
-      sync();
-    }, 1300);
-  } else clearInterval(timer);
+  if (!playing) { clearInterval(timer); return; }
+  timer = setInterval(() => {
+    if (year >= 2032) { playing = false; document.getElementById('play').textContent = '▶'; clearInterval(timer); return; }
+    year += 1; sync();
+  }, 1200);
 };
 </script>
 </body>
