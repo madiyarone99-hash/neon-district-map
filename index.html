@@ -1,166 +1,667 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="theme-color" content="#05070d"/>
-<title>NEXUS-7 — Neon District Map</title>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Orbitron:wght@600;700&display=swap" rel="stylesheet"/>
-<style>
-:root{--cyan:#00f0ff;--magenta:#ff2bd6;--lime:#39ff88;--amber:#ffb020;--text:#e8f4ff;--muted:#7f97ad;--panel:rgba(8,14,26,.92)}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'Exo 2',sans-serif;color:var(--text);background:#05070d}
-body{background:radial-gradient(900px 500px at 10% -10%,rgba(0,240,255,.12),transparent 55%),radial-gradient(700px 400px at 100% 0,rgba(255,43,214,.1),transparent 50%),#05070d}
-.app{max-width:1400px;margin:0 auto;padding:.75rem;min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto;gap:.75rem}
-.brand{display:flex;gap:.7rem;align-items:center}
-.mark{width:12px;height:40px;background:linear-gradient(180deg,var(--cyan),var(--magenta));box-shadow:0 0 16px rgba(0,240,255,.5)}
-h1{font-family:Orbitron,sans-serif;margin:0;font-size:clamp(1.4rem,4vw,2rem);background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
-.sub{margin:.15rem 0 0;color:var(--muted);letter-spacing:.18em;font-size:.75rem;text-transform:uppercase}
-.tag{color:var(--muted);font-size:.9rem;margin:.4rem 0 0}
-.layers{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
-.layers button,.tick,.play{border:1px solid rgba(0,240,255,.25);background:rgba(10,18,32,.7);color:var(--muted);border-radius:999px;padding:.35rem .7rem;font:inherit;cursor:pointer}
-.layers button.on{color:var(--cyan);border-color:rgba(0,240,255,.6);box-shadow:0 0 10px rgba(0,240,255,.2)}
-.stage{position:relative;min-height:0}
-.map{border:1px solid rgba(0,240,255,.2);border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#0c1626,#060a12);min-height:46vh;position:relative}
-.map svg{width:100%;display:block;min-height:46vh}
-.b path{fill:rgba(20,40,70,.85);stroke:rgba(0,240,255,.45);stroke-width:1.5;cursor:pointer;transition:.2s}
-.b.planned path{fill:rgba(40,40,60,.5);stroke:#889;stroke-dasharray:6 4}
-.b.excavation path{fill:rgba(80,50,20,.7);stroke:var(--amber)}
-.b.structure path{fill:rgba(20,55,90,.85);stroke:var(--cyan)}
-.b.finishing path{fill:rgba(30,80,100,.9);stroke:#7cf}
-.b.handover path{fill:rgba(20,90,70,.85);stroke:var(--lime)}
-.b.sold path{fill:rgba(50,30,70,.75);stroke:var(--magenta);opacity:.75}
-.b.sel path{stroke-width:3;filter:drop-shadow(0 0 10px rgba(0,240,255,.65))}
-.b text{pointer-events:none;font-family:Orbitron,sans-serif;font-size:11px;fill:#fff}
-.b .meta{font-family:'Exo 2',sans-serif;font-size:9px;fill:var(--cyan)}
-.panel{position:absolute;right:.6rem;top:.6rem;bottom:.6rem;width:min(340px,calc(100% - 1.2rem));overflow:auto;padding:1rem;border-radius:12px;border:1px solid rgba(0,240,255,.28);background:var(--panel);backdrop-filter:blur(12px);display:none;flex-direction:column;gap:.7rem;z-index:5}
-.panel.open{display:flex}
-.panel h2{font-family:Orbitron,sans-serif;margin:.15rem 0;font-size:1.1rem}
-.kicker{color:var(--magenta);font-size:.65rem;letter-spacing:.16em;margin:0}
-.close{border:1px solid rgba(0,240,255,.25);background:0;color:var(--muted);width:2rem;height:2rem;border-radius:8px;cursor:pointer;font-size:1.2rem}
-.head{display:flex;justify-content:space-between;gap:.5rem}
-.stats{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:.4rem}
-.stats div{padding:.5rem;border:1px solid rgba(255,255,255,.06);border-radius:8px;background:rgba(255,255,255,.02)}
-.stats span{display:block;font-size:.65rem;color:var(--muted);text-transform:uppercase}
-.stats strong{font-size:.9rem}
-.sec h3{font-family:Orbitron,sans-serif;font-size:.68rem;letter-spacing:.12em;color:var(--cyan);margin:0 0 .35rem}
-.chips{display:flex;flex-wrap:wrap;gap:.3rem;list-style:none;padding:0;margin:0}
-.chips li{font-size:.72rem;padding:.25rem .5rem;border:1px solid rgba(57,255,136,.35);color:var(--lime);border-radius:999px}
-.conds{margin:0;padding:0;list-style:none}
-.conds li{padding-left:.85rem;position:relative;font-size:.85rem;margin:.25rem 0}
-.conds li:before{content:'';position:absolute;left:0;top:.45rem;width:.3rem;height:.3rem;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
-.future{padding:.65rem;border-left:2px solid var(--magenta);background:rgba(255,43,214,.06);font-size:.85rem;color:var(--muted)}
-.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;list-style:none;padding:0;margin:0}
-.phases li{font-size:.7rem;color:var(--muted);display:flex;gap:.3rem;align-items:center}
-.phases li.done{color:var(--text)}
-.phases li.cur{color:var(--lime)}
-.dot{width:.4rem;height:.4rem;border-radius:50%;background:#334;flex-shrink:0}
-.done .dot{background:var(--cyan)}.cur .dot{background:var(--lime);box-shadow:0 0 8px var(--lime)}
-.cta{margin-top:auto;border:0;border-radius:10px;padding:.8rem;background:linear-gradient(90deg,#0099aa,var(--cyan) 40%,#7a3cff);color:#041018;font-family:Orbitron,sans-serif;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
-.tl{border:1px solid rgba(0,240,255,.2);border-radius:12px;padding:.8rem;background:rgba(8,14,26,.75)}
-.tl-top{display:flex;gap:.7rem;align-items:center;margin-bottom:.5rem}
-.play{width:2.3rem;height:2.3rem;border-radius:50%;color:var(--cyan);flex-shrink:0;padding:0}
-.yn{font-family:Orbitron,sans-serif;font-size:1.3rem;color:var(--cyan)}
-.ye{color:var(--muted);font-size:.8rem}
-input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,.12);outline:0}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px rgba(0,240,255,.8)}
-.ticks{display:flex;justify-content:space-between;overflow-x:auto;margin-top:.3rem}
-.tick{background:0;border:0;color:var(--muted);font-size:.65rem;padding:.2rem;min-width:2rem}
-.tick.on{color:var(--cyan);font-weight:700}
-.hint{text-align:center;color:var(--muted);font-size:.75rem;margin:0}
-@media(max-width:720px){.panel{position:fixed;left:0;right:0;top:auto;bottom:0;width:100%;max-height:58vh;border-radius:16px 16px 0 0}.map svg,.map{min-height:42vh}.b .meta{display:none}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#05070d" />
+  <title>NEXUS-7 — Neon District Map</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    :root {
+      --cyan: #00f0ff;
+      --magenta: #ff2bd6;
+      --lime: #39ff88;
+      --amber: #ffb020;
+      --text: #e8f4ff;
+      --muted: #8aa0b5;
+      --panel: rgba(6, 10, 18, 0.88);
+      --line: rgba(0, 240, 255, 0.28);
+      --font-d: 'Orbitron', sans-serif;
+      --font-b: 'Exo 2', sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--font-b); color: var(--text); background: #05070d; }
+    #map { position: absolute; inset: 0; }
+    .maplibregl-ctrl-attrib { font-size: 10px !important; background: rgba(0,0,0,.45) !important; color: #9ab !important; }
+    .maplibregl-ctrl-attrib a { color: #9cf !important; }
+    .maplibregl-ctrl-group { background: rgba(8,14,26,.9) !important; border: 1px solid var(--line) !important; }
+    .maplibregl-ctrl-group button { filter: invert(1) hue-rotate(160deg); }
+
+    .chrome {
+      position: absolute; z-index: 2; pointer-events: none;
+      inset: 0; display: flex; flex-direction: column; justify-content: space-between;
+      padding: max(0.7rem, env(safe-area-inset-top)) 0.75rem max(0.7rem, env(safe-area-inset-bottom));
+    }
+    .chrome > * { pointer-events: auto; }
+
+    .top {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-start; justify-content: space-between;
+    }
+    .brand {
+      display: flex; gap: 0.65rem; align-items: center;
+      padding: 0.65rem 0.85rem; border-radius: 14px;
+      background: var(--panel); border: 1px solid var(--line);
+      backdrop-filter: blur(16px); box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    }
+    .mark {
+      width: 10px; height: 36px; border-radius: 2px;
+      background: linear-gradient(180deg, var(--cyan), var(--magenta));
+      box-shadow: 0 0 18px rgba(0,240,255,.55);
+    }
+    .brand h1 {
+      margin: 0; font-family: var(--font-d); font-size: 1.25rem; letter-spacing: 0.04em;
+      background: linear-gradient(90deg, #fff, var(--cyan));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .brand p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
+
+    .layers {
+      display: flex; flex-wrap: wrap; gap: 0.35rem;
+      padding: 0.4rem; border-radius: 999px;
+      background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(16px);
+    }
+    .layers button {
+      border: 1px solid transparent; background: transparent; color: var(--muted);
+      border-radius: 999px; padding: 0.4rem 0.75rem; font: inherit; font-size: 0.72rem;
+      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    }
+    .layers button.on {
+      color: var(--cyan); border-color: rgba(0,240,255,.45);
+      box-shadow: 0 0 14px rgba(0,240,255,.2); background: rgba(0,240,255,.08);
+    }
+
+    .bottom {
+      display: grid; gap: 0.55rem;
+      width: min(720px, 100%);
+      margin: 0 auto;
+    }
+    .timeline {
+      padding: 0.75rem 0.9rem 0.65rem; border-radius: 16px;
+      background: var(--panel); border: 1px solid var(--line);
+      backdrop-filter: blur(16px); box-shadow: 0 -8px 40px rgba(0,0,0,.35);
+    }
+    .tl-top { display: flex; gap: 0.7rem; align-items: center; margin-bottom: 0.45rem; }
+    .play {
+      width: 2.3rem; height: 2.3rem; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(0,240,255,.45); background: rgba(0,240,255,.08);
+      color: var(--cyan); cursor: pointer; font-size: 0.85rem;
+    }
+    .yn { font-family: var(--font-d); font-size: 1.25rem; color: var(--cyan); }
+    .ye { color: var(--muted); font-size: 0.78rem; line-height: 1.3; }
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 8px; border-radius: 999px;
+      background: linear-gradient(90deg, var(--cyan) 0%, var(--cyan) var(--p, 25%), rgba(255,255,255,.12) var(--p, 25%));
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--cyan); box-shadow: 0 0 14px rgba(0,240,255,.85); cursor: grab;
+    }
+    .ticks { display: flex; justify-content: space-between; margin-top: 0.25rem; overflow-x: auto; }
+    .ticks button {
+      border: 0; background: 0; color: var(--muted); font-size: 0.62rem; padding: 0.15rem; cursor: pointer; min-width: 2rem;
+    }
+    .ticks button.on { color: var(--cyan); font-weight: 700; }
+
+    .panel {
+      position: absolute; z-index: 3; right: 0.75rem; top: 5.2rem;
+      width: min(360px, calc(100% - 1.5rem)); max-height: calc(100% - 11rem);
+      overflow: auto; padding: 1rem; border-radius: 16px;
+      background: var(--panel); border: 1px solid var(--line);
+      backdrop-filter: blur(18px); box-shadow: 0 18px 50px rgba(0,0,0,.5);
+      display: none; flex-direction: column; gap: 0.75rem;
+      transform: translateX(12px); opacity: 0; transition: .25s ease;
+    }
+    .panel.open { display: flex; transform: none; opacity: 1; }
+    .panel-head { display: flex; justify-content: space-between; gap: 0.5rem; }
+    .kicker { margin: 0; color: var(--magenta); font-size: 0.65rem; letter-spacing: 0.14em; }
+    .panel h2 { margin: 0.2rem 0 0; font-family: var(--font-d); font-size: 1.15rem; }
+    .tagline { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
+    .close {
+      width: 2rem; height: 2rem; border-radius: 8px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); font-size: 1.2rem; cursor: pointer;
+    }
+    .stats { display: grid; grid-template-columns: 1.35fr 1fr .75fr; gap: 0.4rem; }
+    .stats > div {
+      padding: 0.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.03);
+    }
+    .stats span { display: block; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .stats strong { font-size: 0.88rem; }
+    .delta { font-size: 0.7rem; }
+    .delta.up { color: var(--lime); }
+    .sec h3 {
+      margin: 0 0 0.35rem; font-family: var(--font-d); font-size: 0.68rem;
+      letter-spacing: 0.12em; color: var(--cyan); text-transform: uppercase;
+    }
+    .chips, .conds, .phases { list-style: none; margin: 0; padding: 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .chips li {
+      font-size: 0.72rem; padding: 0.25rem 0.55rem; border-radius: 999px;
+      border: 1px solid rgba(57,255,136,.35); color: var(--lime);
+    }
+    .conds li { position: relative; padding-left: 0.85rem; font-size: 0.85rem; margin: 0.28rem 0; }
+    .conds li::before {
+      content: ''; position: absolute; left: 0; top: 0.45rem; width: 0.3rem; height: 0.3rem;
+      border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+    }
+    .phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+    .phases li { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: var(--muted); }
+    .phases li.done { color: var(--text); }
+    .phases li.cur { color: var(--lime); }
+    .dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #334; flex-shrink: 0; }
+    .done .dot { background: var(--cyan); }
+    .cur .dot { background: var(--lime); box-shadow: 0 0 8px var(--lime); }
+    .future {
+      padding: 0.65rem 0.7rem; border-left: 2px solid var(--magenta);
+      background: rgba(255,43,214,.07); color: var(--muted); font-size: 0.85rem; line-height: 1.4;
+    }
+    .cta {
+      margin-top: auto; border: 0; border-radius: 12px; padding: 0.85rem;
+      background: linear-gradient(90deg, #0099aa, var(--cyan) 45%, #7a3cff);
+      color: #041018; font-family: var(--font-d); font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+      box-shadow: 0 0 24px rgba(0,240,255,.3);
+    }
+    .hint {
+      text-align: center; font-size: 0.72rem; color: var(--muted);
+      text-shadow: 0 1px 8px #000;
+    }
+    .legend {
+      position: absolute; z-index: 2; left: 0.75rem; bottom: 7.5rem;
+      padding: 0.55rem 0.7rem; border-radius: 12px;
+      background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(12px);
+      font-size: 0.68rem; color: var(--muted); line-height: 1.55;
+    }
+    .legend b { color: var(--text); }
+    .sw { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 2px; margin-right: 0.25rem; vertical-align: middle; }
+
+    @media (max-width: 720px) {
+      .panel {
+        left: 0; right: 0; top: auto; bottom: 0; width: 100%;
+        max-height: min(52vh, 420px); border-radius: 18px 18px 0 0;
+        transform: translateY(16px);
+      }
+      .panel.open { transform: none; }
+      .legend { display: none; }
+      .bottom { width: 100%; }
+      .brand h1 { font-size: 1.05rem; }
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="brand"><div class="mark"></div><div><h1>NEXUS-7</h1><p class="sub">Neon Arc Quarter</p></div></div>
-    <p class="tag">Купи участок в будущем, которое уже строится</p>
-    <div class="layers" id="layers">
-      <button data-l="green" class="on">Зелень</button>
-      <button data-l="lrt" class="on">LRT</button>
-      <button data-l="mosque" class="on">Мечеть</button>
-    </div>
-  </header>
-  <main class="stage">
-    <div class="map" id="map"></div>
-    <aside class="panel" id="panel"></aside>
-  </main>
-  <div>
-    <div class="tl">
-      <div class="tl-top">
-        <button class="play" id="play">▶</button>
-        <div><div class="yn" id="yn">2026</div><div class="ye" id="ye"></div></div>
-      </div>
-      <input type="range" id="range" min="2024" max="2032" step="1" value="2026"/>
-      <div class="ticks" id="ticks"></div>
-    </div>
-    <p class="hint">Крути год — LRT, парки, фазы и цены. Тапни здание.</p>
+  <div id="map"></div>
+
+  <div class="legend" id="legend">
+    <div><span class="sw" style="background:#00f0ff"></span><b>Здания</b> — тапни объект</div>
+    <div><span class="sw" style="background:#39ff88"></span>Зелёные зоны</div>
+    <div><span class="sw" style="background:#ffb020"></span>LRT трасса</div>
+    <div><span class="sw" style="background:#ff2bd6"></span>Мега-мечеть</div>
   </div>
-</div>
+
+  <aside class="panel" id="panel"></aside>
+
+  <div class="chrome">
+    <div class="top">
+      <div class="brand">
+        <div class="mark"></div>
+        <div>
+          <h1>NEXUS-7</h1>
+          <p>Neon Arc Quarter · fictional</p>
+        </div>
+      </div>
+      <div class="layers" id="layers">
+        <button data-l="green" class="on">Зелень</button>
+        <button data-l="lrt" class="on">LRT</button>
+        <button data-l="mosque" class="on">Мечеть</button>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="timeline">
+        <div class="tl-top">
+          <button class="play" id="play" type="button">▶</button>
+          <div>
+            <div class="yn" id="yn">2026</div>
+            <div class="ye" id="ye"></div>
+          </div>
+        </div>
+        <input type="range" id="range" min="2024" max="2032" step="1" value="2026" />
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <p class="hint">Настоящая карта · крути год · жми здание</p>
+    </div>
+  </div>
+
 <script>
-const YEARS=[2024,2025,2026,2027,2028,2029,2030,2031,2032];
-const EVENTS={2024:'Старт квартала · мечеть открыта',2025:'Emerald Spine — зелёная зона',2026:'Старт LRT Neon Line',2027:'Pulse Park · LRT строится',2028:'Расширение парка · North Spire',2029:'Пик сдачи корпусов',2030:'LRT открыт · переоценка',2031:'Canal food-court',2032:'Планы второй фазы'};
-const PHASE={planned:'План',excavation:'Котлован',structure:'Каркас',finishing:'Отделка',handover:'Сдача',sold:'Продано'};
-const AM={lrt:'LRT рядом',mosque:'Мега-мечеть',green:'Зелёная зона',market:'Базар',school:'Школа'};
-const buildings=[
-{id:'b1',name:'Prism Tower',tag:'Стеклянный хай-райз у LRT',poly:'M120 300 L200 280 L220 380 L140 400 Z',lx:160,ly:340,area:420,floors:28,am:['lrt','green'],cond:['Первый взнос от 20%','Рассрочка до сдачи без %','Вид на канал + LRT'],appear:2024,phase:{2024:'excavation',2025:'structure',2026:'structure',2027:'finishing',2028:'handover',2029:'sold',2030:'sold',2031:'sold',2032:'sold'},prices:{2024:480,2025:520,2026:610,2027:690,2028:780,2029:820,2030:860,2031:900,2032:940},future:'К 2030 — ритейл-подиум и sky-bridge к LRT'},
-{id:'b2',name:'Mosque Gate',tag:'Лофты у Aurora Mosque',poly:'M300 200 L390 180 L410 270 L320 290 Z',lx:350,ly:235,area:95,floors:12,am:['mosque','green','market'],cond:['Семейные 2–4 комн.','Закрытый двор','Шариат-friendly escrow'],appear:2024,phase:{2024:'planned',2025:'excavation',2026:'structure',2027:'finishing',2028:'handover',2029:'handover',2030:'sold',2031:'sold',2032:'sold'},prices:{2024:390,2025:410,2026:470,2027:540,2028:600,2029:640,2030:680,2031:710,2032:740},future:'После 2029 — wellness-этаж и терраса'},
-{id:'b3',name:'Canal Strip',tag:'Ритейл + апартаменты у воды',poly:'M240 440 L360 420 L380 500 L260 520 Z',lx:310,ly:470,area:160,floors:8,am:['green','market'],cond:['Коммерция 1 этаж','Аренда до сдачи ок','Льгота 2 года'],appear:2025,phase:{2025:'planned',2026:'excavation',2027:'structure',2028:'finishing',2029:'handover',2030:'handover',2031:'sold',2032:'sold'},prices:{2025:350,2026:380,2027:430,2028:510,2029:580,2030:620,2031:660,2032:700},future:'К 2031 — food-court на канале'},
-{id:'b4',name:'LRT Hub',tag:'Жить над станцией',poly:'M520 280 L640 260 L660 360 L540 380 Z',lx:590,ly:320,area:72,floors:18,am:['lrt','green','school'],cond:['5 мин до LRT','Smart-home','Кешбек 3% до 2027'],appear:2026,phase:{2026:'planned',2027:'excavation',2028:'structure',2029:'finishing',2030:'handover',2031:'handover',2032:'sold'},prices:{2026:520,2027:560,2028:640,2029:720,2030:800,2031:850,2032:910},future:'После LRT — переоценка +20–25%'},
-{id:'b5',name:'Pulse Villas',tag:'Таунхаусы у парка',poly:'M740 380 L860 360 L880 460 L760 480 Z',lx:810,ly:420,area:210,floors:3,am:['green','school'],cond:['Участок 80 м²','2 парковки','Лимит этажности'],appear:2027,phase:{2027:'planned',2028:'excavation',2029:'structure',2030:'finishing',2031:'handover',2032:'handover'},prices:{2027:450,2028:480,2029:540,2030:610,2031:680,2032:720},future:'К 2032 — велодорожка к мечети'},
-{id:'b6',name:'North Spire',tag:'Флагман 2030+',poly:'M600 100 L700 80 L740 180 L640 200 Z',lx:670,ly:140,area:110,floors:42,am:['lrt','mosque','green','market'],cond:['Pre-sale до 2028','Мин. 2 комнаты','Консьерж + sky lounge'],appear:2028,phase:{2028:'planned',2029:'excavation',2030:'structure',2031:'structure',2032:'finishing'},prices:{2028:700,2029:760,2030:850,2031:940,2032:1050},future:'2033–35: башня-близнец'}
-];
-let year=2026, sel='b1', layers={green:1,lrt:1,mosque:1}, playing=0, timer=null;
-const fmt=p=>p>=1000?(p/1000).toFixed(2)+' млн ₸/м²':p+'k ₸/м²';
-function render(){
-  document.getElementById('yn').textContent=year;
-  document.getElementById('ye').textContent=EVENTS[year];
-  document.getElementById('range').value=year;
-  [...document.querySelectorAll('.tick')].forEach(t=>t.classList.toggle('on',+t.dataset.y===year));
-  const lrtOpen=year>=2030, lrtBuild=year>=2026&&year<2030;
-  const green1=year>=2025, green1e=year>=2028, green2=year>=2027;
-  let svg=`<svg viewBox="0 0 1000 620" style="width:100%">
-  <defs><linearGradient id="w" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0a3d55"/><stop offset="1" stop-color="#062433"/></linearGradient>
-  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#39ff88" stop-opacity=".55"/><stop offset="1" stop-color="#0d5c36" stop-opacity=".35"/></linearGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-  <g opacity=".3" stroke="#4a6a7a" stroke-width="2" stroke-dasharray="4 8"><path d="M0 200 H1000"/><path d="M0 360 H1000"/><path d="M200 0 V620"/><path d="M520 0 V620"/></g>
-  <path d="M40 520 C180 480,320 560,480 500 S780 420,960 480 L960 600 L40 600 Z" fill="url(#w)" stroke="#1a8ab8"/>`;
-  if(layers.mosque) svg+=`<path d="M200 120 L280 90 L340 140 L300 220 L180 200 Z" fill="#1a1030" stroke="#ff2bd6" stroke-width="2" filter="url(#glow)"/><text x="210" y="155" fill="#ff9de8" font-family="Orbitron" font-size="11" letter-spacing="2">MEGA MOSQUE</text>`;
-  if(layers.green&&green1) svg+=`<path d="${green1e?'M380 140 L560 120 L620 300 L500 360 L340 280 Z':'M420 180 L520 160 L560 280 L480 320 L400 260 Z'}" fill="url(#g)" stroke="#39ff88"/>`;
-  if(layers.green&&green2) svg+=`<path d="M720 220 L860 200 L880 340 L740 360 Z" fill="url(#g)" stroke="#39ff88"/>`;
-  if(layers.lrt&&year>=2026){svg+=`<path d="M60 380 C220 340,400 300,560 320 S820 380,940 300" fill="none" stroke="${lrtOpen?'#00f0ff':'#ffb020'}" stroke-width="${lrtOpen?6:4}" stroke-dasharray="${lrtOpen?0:'12 10'}" filter="url(#glow)"/>
-  <circle cx="120" cy="360" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="400" cy="310" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="700" cy="350" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/><circle cx="900" cy="310" r="6" fill="${lrtOpen?'#00f0ff':'#ffb020'}"/>
-  <text x="560" y="300" fill="#00f0ff" font-family="Orbitron" font-size="10">${lrtOpen?'LRT OPEN':lrtBuild?'LRT BUILD':'LRT'}</text>`}
-  buildings.forEach(b=>{
-    if(year<b.appear) return;
-    const ph=b.phase[year], pr=b.prices[year], on=sel===b.id;
-    svg+=`<g class="b ${ph||''} ${on?'sel':''}" data-id="${b.id}"><path d="${b.poly}"/><text x="${b.lx}" y="${b.ly-6}" text-anchor="middle">${b.name.split(' ')[0]}</text><text class="meta" x="${b.lx}" y="${b.ly+12}" text-anchor="middle">${PHASE[ph]||''}${pr?' · '+fmt(pr):''}</text></g>`;
-  });
-  svg+='</svg>';
-  document.getElementById('map').innerHTML=svg;
-  document.querySelectorAll('.b').forEach(g=>g.onclick=()=>{sel=g.dataset.id;render()});
-  const b=buildings.find(x=>x.id===sel);
-  const pan=document.getElementById('panel');
-  if(!b||year<b.appear){pan.classList.remove('open');return}
-  pan.classList.add('open');
-  const ph=b.phase[year], pr=b.prices[year], prev=b.prices[year-1];
-  const delta=pr&&prev?((pr-prev)/prev*100).toFixed(1):null;
-  const order=['planned','excavation','structure','finishing','handover','sold'];
-  const idx=order.indexOf(ph);
-  pan.innerHTML=`<div class="head"><div><p class="kicker">OBJECT // ${b.id.toUpperCase()}</p><h2>${b.name}</h2><p style="margin:0;color:var(--muted);font-size:.85rem">${b.tag}</p></div><button class="close" id="cls">×</button></div>
-  <div class="stats"><div><span>Цена ${year}</span><strong>${pr?fmt(pr):'—'}</strong>${delta!=null?`<div style="color:${delta>=0?'var(--lime)':'var(--magenta)'};font-size:.7rem">${delta>=0?'+':''}${delta}% YoY</div>`:''}</div><div><span>Площадь</span><strong>${b.area} м²</strong></div><div><span>Этажей</span><strong>${b.floors}</strong></div></div>
-  <div class="sec"><h3>Фазы стройки</h3><ol class="phases">${order.map((p,i)=>`<li class="${i<=idx?'done':''} ${p===ph?'cur':''}"><span class="dot"></span>${PHASE[p]}</li>`).join('')}</ol></div>
-  <div class="sec"><h3>Рядом</h3><ul class="chips">${b.am.map(a=>`<li>${AM[a]}</li>`).join('')}</ul></div>
-  <div class="sec"><h3>Условия</h3><ul class="conds">${b.cond.map(c=>`<li>${c}</li>`).join('')}</ul></div>
-  <div class="future"><strong style="color:var(--magenta)">Что дальше</strong><br>${b.future}</div>
-  <button class="cta">Забронировать интерес</button>`;
-  document.getElementById('cls').onclick=()=>{sel=null;render()};
+const YEARS = [2024,2025,2026,2027,2028,2029,2030,2031,2032];
+const EVENTS = {
+  2024:'Старт квартала · мечеть уже на карте',
+  2025:'Emerald Spine появляется',
+  2026:'Чертёж LRT ложится на улицы',
+  2027:'Pulse Park · LRT на стройке',
+  2028:'Парк расширяется · North Spire pre-sale',
+  2029:'Пик сдачи жилых корпусов',
+  2030:'LRT открыт · цены переоцениваются',
+  2031:'Canal strip saturated',
+  2032:'Планы второй фазы аркологии'
+};
+const PHASE = {planned:'План',excavation:'Котлован',structure:'Каркас',finishing:'Отделка',handover:'Сдача',sold:'Продано'};
+const AM = {lrt:'LRT рядом',mosque:'Мега-мечеть',green:'Зелёная зона',market:'Базар',school:'Школа'};
+const ORDER = ['planned','excavation','structure','finishing','handover','sold'];
+
+/* Fictional Neo-Astana pocket around real city fabric */
+const C = { lng: 71.4304, lat: 51.1282 };
+
+function ring(dx, dy, w, h) {
+  const [[a,b],[c,d],[e,f],[g,hh]] = [
+    [C.lng+dx, C.lat+dy],
+    [C.lng+dx+w, C.lat+dy],
+    [C.lng+dx+w, C.lat+dy+h],
+    [C.lng+dx, C.lat+dy+h],
+  ];
+  return [[a,b],[c,d],[e,f],[g,hh],[a,b]];
 }
-YEARS.forEach(y=>{const b=document.createElement('button');b.className='tick'+(y===year?' on':'');b.dataset.y=y;b.textContent=y;b.onclick=()=>{year=y;render()};document.getElementById('ticks').appendChild(b)});
-document.getElementById('range').oninput=e=>{year=+e.target.value;render()};
-document.getElementById('layers').onclick=e=>{const btn=e.target.closest('button');if(!btn)return;const k=btn.dataset.l;layers[k]=!layers[k];btn.classList.toggle('on',!!layers[k]);render()};
-document.getElementById('play').onclick=()=>{playing=!playing;document.getElementById('play').textContent=playing?'❚❚':'▶';if(playing){timer=setInterval(()=>{if(year>=2032){playing=0;document.getElementById('play').textContent='▶';clearInterval(timer);return}year++;render()},1200)}else clearInterval(timer)};
-render();
+function poly(coords) {
+  return { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: {} };
+}
+
+const buildings = [
+  {
+    id:'b1', name:'Prism Tower', tag:'Стеклянный хай-райз у LRT',
+    area:420, floors:28, am:['lrt','green'],
+    cond:['Первый взнос от 20%','Рассрочка до сдачи без %','Вид на бульвар + LRT'],
+    appear:2024,
+    phase:{2024:'excavation',2025:'structure',2026:'structure',2027:'finishing',2028:'handover',2029:'sold',2030:'sold',2031:'sold',2032:'sold'},
+    prices:{2024:480,2025:520,2026:610,2027:690,2028:780,2029:820,2030:860,2031:900,2032:940},
+    future:'К 2030 — ритейл-подиум и sky-bridge к станции LRT',
+    coords: ring(-0.012, 0.004, 0.0045, 0.0032)
+  },
+  {
+    id:'b2', name:'Mosque Gate', tag:'Лофты у Aurora Mosque',
+    area:95, floors:12, am:['mosque','green','market'],
+    cond:['Семейные 2–4 комн.','Закрытый двор','Шариат-friendly escrow'],
+    appear:2024,
+    phase:{2024:'planned',2025:'excavation',2026:'structure',2027:'finishing',2028:'handover',2029:'handover',2030:'sold',2031:'sold',2032:'sold'},
+    prices:{2024:390,2025:410,2026:470,2027:540,2028:600,2029:640,2030:680,2031:710,2032:740},
+    future:'После 2029 — wellness-этаж и зелёная терраса',
+    coords: ring(-0.006, 0.008, 0.004, 0.0028)
+  },
+  {
+    id:'b3', name:'Canal Strip', tag:'Ритейл + апартаменты у воды',
+    area:160, floors:8, am:['green','market'],
+    cond:['Коммерция на 1 этаже','Аренда до сдачи ок','Льгота 2 года'],
+    appear:2025,
+    phase:{2025:'planned',2026:'excavation',2027:'structure',2028:'finishing',2029:'handover',2030:'handover',2031:'sold',2032:'sold'},
+    prices:{2025:350,2026:380,2027:430,2028:510,2029:580,2030:620,2031:660,2032:700},
+    future:'К 2031 — food-court у набережной',
+    coords: ring(-0.009, -0.002, 0.0055, 0.0026)
+  },
+  {
+    id:'b4', name:'LRT Hub', tag:'Жить над станцией',
+    area:72, floors:18, am:['lrt','green','school'],
+    cond:['5 мин пешком до LRT','Smart-home','Кешбек 3% до 2027'],
+    appear:2026,
+    phase:{2026:'planned',2027:'excavation',2028:'structure',2029:'finishing',2030:'handover',2031:'handover',2032:'sold'},
+    prices:{2026:520,2027:560,2028:640,2029:720,2030:800,2031:850,2032:910},
+    future:'После открытия LRT — переоценка +20–25%',
+    coords: ring(0.001, 0.003, 0.0048, 0.003)
+  },
+  {
+    id:'b5', name:'Pulse Villas', tag:'Таунхаусы у парка',
+    area:210, floors:3, am:['green','school'],
+    cond:['Участок 80 м²','2 парковки','Лимит этажности'],
+    appear:2027,
+    phase:{2027:'planned',2028:'excavation',2029:'structure',2030:'finishing',2031:'handover',2032:'handover'},
+    prices:{2027:450,2028:480,2029:540,2030:610,2031:680,2032:720},
+    future:'К 2032 — велодорожка к мечети',
+    coords: ring(0.008, -0.001, 0.005, 0.0028)
+  },
+  {
+    id:'b6', name:'North Spire', tag:'Флагман квартала 2030+',
+    area:110, floors:42, am:['lrt','mosque','green','market'],
+    cond:['Pre-sale до 2028','Мин. 2 комнаты','Консьерж + sky lounge'],
+    appear:2028,
+    phase:{2028:'planned',2029:'excavation',2030:'structure',2031:'structure',2032:'finishing'},
+    prices:{2028:700,2029:760,2030:850,2031:940,2032:1050},
+    future:'2033–35: башня-близнец и воздушный сад',
+    coords: ring(0.004, 0.01, 0.0042, 0.0034)
+  }
+];
+
+const mosqueCoords = ring(-0.011, 0.011, 0.0055, 0.004);
+const greenCore = ring(-0.002, 0.006, 0.007, 0.005);
+const greenCoreBig = ring(-0.004, 0.005, 0.01, 0.007);
+const greenEast = ring(0.008, 0.006, 0.006, 0.0045);
+const lrtLine = {
+  type: 'Feature',
+  geometry: {
+    type: 'LineString',
+    coordinates: [
+      [C.lng - 0.018, C.lat + 0.001],
+      [C.lng - 0.01, C.lat + 0.004],
+      [C.lng - 0.002, C.lat + 0.0055],
+      [C.lng + 0.006, C.lat + 0.004],
+      [C.lng + 0.014, C.lat + 0.002],
+      [C.lng + 0.02, C.lat + 0.005]
+    ]
+  },
+  properties: {}
+};
+
+const PHASE_COLOR = {
+  planned: '#8899aa',
+  excavation: '#ffb020',
+  structure: '#00f0ff',
+  finishing: '#66ccff',
+  handover: '#39ff88',
+  sold: '#ff2bd6'
+};
+
+let year = 2026, selected = 'b1', playing = false, timer = null;
+const layersOn = { green: true, lrt: true, mosque: true };
+
+function fmt(p){ return p >= 1000 ? (p/1000).toFixed(2) + ' млн ₸/м²' : p + 'k ₸/м²'; }
+
+function buildingsFC() {
+  return {
+    type: 'FeatureCollection',
+    features: buildings.filter(b => year >= b.appear).map(b => {
+      const ph = b.phase[year];
+      return {
+        type: 'Feature',
+        properties: {
+          id: b.id,
+          name: b.name,
+          phase: ph,
+          color: PHASE_COLOR[ph] || '#00f0ff',
+          selected: b.id === selected ? 1 : 0,
+          label: b.name.split(' ')[0] + '\n' + (PHASE[ph] || '')
+        },
+        geometry: { type: 'Polygon', coordinates: [b.coords] }
+      };
+    })
+  };
+}
+
+function greenFC() {
+  const feats = [];
+  if (year >= 2025) feats.push({ ...poly(year >= 2028 ? greenCoreBig : greenCore), properties: { id: 'g1' } });
+  if (year >= 2027) feats.push({ ...poly(greenEast), properties: { id: 'g2' } });
+  return { type: 'FeatureCollection', features: feats };
+}
+
+function mosqueFC() {
+  return {
+    type: 'FeatureCollection',
+    features: year >= 2024 ? [{ ...poly(mosqueCoords), properties: { name: 'Aurora Mega Mosque' } }] : []
+  };
+}
+
+function lrtFC() {
+  return {
+    type: 'FeatureCollection',
+    features: year >= 2026 ? [{ ...lrtLine, properties: { open: year >= 2030 ? 1 : 0 } }] : []
+  };
+}
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  center: [C.lng, C.lat],
+  zoom: 13.6,
+  pitch: 48,
+  bearing: -18,
+  antialias: true
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ maxWidth: 100 }), 'bottom-left');
+
+map.on('load', () => {
+  // subtle cyberpunk tint via fog-like atmosphere if supported
+  try {
+    map.setPaintProperty('background', 'background-color', '#05070d');
+  } catch (_) {}
+
+  map.addSource('green', { type: 'geojson', data: greenFC() });
+  map.addSource('mosque', { type: 'geojson', data: mosqueFC() });
+  map.addSource('lrt', { type: 'geojson', data: lrtFC() });
+  map.addSource('buildings', { type: 'geojson', data: buildingsFC() });
+
+  map.addLayer({
+    id: 'green-fill', type: 'fill', source: 'green',
+    paint: {
+      'fill-color': '#39ff88',
+      'fill-opacity': 0.22
+    }
+  });
+  map.addLayer({
+    id: 'green-line', type: 'line', source: 'green',
+    paint: { 'line-color': '#39ff88', 'line-width': 2, 'line-opacity': 0.85 }
+  });
+
+  map.addLayer({
+    id: 'mosque-fill', type: 'fill', source: 'mosque',
+    paint: { 'fill-color': '#ff2bd6', 'fill-opacity': 0.28 }
+  });
+  map.addLayer({
+    id: 'mosque-line', type: 'line', source: 'mosque',
+    paint: { 'line-color': '#ff2bd6', 'line-width': 2.5, 'line-opacity': 0.95 }
+  });
+  map.addLayer({
+    id: 'mosque-label', type: 'symbol', source: 'mosque',
+    layout: {
+      'text-field': 'MEGA MOSQUE',
+      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+      'text-size': 12,
+      'text-letter-spacing': 0.08
+    },
+    paint: {
+      'text-color': '#ff9de8',
+      'text-halo-color': '#1a0420',
+      'text-halo-width': 1.2
+    }
+  });
+
+  map.addLayer({
+    id: 'lrt-glow', type: 'line', source: 'lrt',
+    paint: {
+      'line-color': ['case', ['==', ['get', 'open'], 1], '#00f0ff', '#ffb020'],
+      'line-width': 10,
+      'line-opacity': 0.25,
+      'line-blur': 1.2
+    }
+  });
+  map.addLayer({
+    id: 'lrt-line', type: 'line', source: 'lrt',
+    paint: {
+      'line-color': ['case', ['==', ['get', 'open'], 1], '#00f0ff', '#ffb020'],
+      'line-width': 3.5,
+      'line-dasharray': ['case', ['==', ['get', 'open'], 1], ['literal', [1, 0]], ['literal', [2, 1.5]]]
+    }
+  });
+
+  map.addLayer({
+    id: 'buildings-fill', type: 'fill-extrusion', source: 'buildings',
+    paint: {
+      'fill-extrusion-color': ['get', 'color'],
+      'fill-extrusion-height': [
+        'case',
+        ['==', ['get', 'phase'], 'planned'], 8,
+        ['==', ['get', 'phase'], 'excavation'], 18,
+        ['==', ['get', 'phase'], 'structure'], 45,
+        ['==', ['get', 'phase'], 'finishing'], 70,
+        ['==', ['get', 'phase'], 'handover'], 90,
+        55
+      ],
+      'fill-extrusion-base': 0,
+      'fill-extrusion-opacity': 0.82
+    }
+  });
+  map.addLayer({
+    id: 'buildings-outline', type: 'line', source: 'buildings',
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': ['case', ['==', ['get', 'selected'], 1], 4, 1.5],
+      'line-opacity': 0.95
+    }
+  });
+  map.addLayer({
+    id: 'buildings-label', type: 'symbol', source: 'buildings',
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-size': 11,
+      'text-offset': [0, 1.1],
+      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Regular'],
+      'text-anchor': 'top'
+    },
+    paint: {
+      'text-color': '#e8f4ff',
+      'text-halo-color': '#05070d',
+      'text-halo-width': 1.4
+    }
+  });
+
+  map.on('click', 'buildings-fill', (e) => {
+    const f = e.features && e.features[0];
+    if (!f) return;
+    selected = f.properties.id;
+    sync();
+    map.flyTo({
+      center: e.lngLat,
+      zoom: Math.max(map.getZoom(), 14.5),
+      pitch: 55,
+      duration: 900
+    });
+  });
+  map.on('mouseenter', 'buildings-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'buildings-fill', () => { map.getCanvas().style.cursor = ''; });
+
+  // slow cinematic drift
+  let t0 = performance.now();
+  function drift(now) {
+    if (!map.isMoving() && !selected) {
+      const t = (now - t0) / 1000;
+      map.setBearing(-18 + Math.sin(t / 18) * 4);
+    }
+    requestAnimationFrame(drift);
+  }
+  requestAnimationFrame(drift);
+
+  sync();
+});
+
+function setLayerVis(id, on) {
+  if (!map.getLayer(id)) return;
+  map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
+}
+
+function syncMapData() {
+  if (!map.getSource('buildings')) return;
+  map.getSource('buildings').setData(buildingsFC());
+  map.getSource('green').setData(greenFC());
+  map.getSource('mosque').setData(mosqueFC());
+  map.getSource('lrt').setData(lrtFC());
+  setLayerVis('green-fill', layersOn.green);
+  setLayerVis('green-line', layersOn.green);
+  setLayerVis('mosque-fill', layersOn.mosque);
+  setLayerVis('mosque-line', layersOn.mosque);
+  setLayerVis('mosque-label', layersOn.mosque);
+  setLayerVis('lrt-glow', layersOn.lrt);
+  setLayerVis('lrt-line', layersOn.lrt);
+}
+
+function renderPanel() {
+  const pan = document.getElementById('panel');
+  const b = buildings.find(x => x.id === selected);
+  if (!b || year < b.appear) {
+    pan.classList.remove('open');
+    return;
+  }
+  const ph = b.phase[year];
+  const pr = b.prices[year];
+  const prev = b.prices[year - 1];
+  const delta = pr && prev ? (((pr - prev) / prev) * 100).toFixed(1) : null;
+  const idx = ORDER.indexOf(ph);
+  pan.classList.add('open');
+  pan.innerHTML = `
+    <div class="panel-head">
+      <div>
+        <p class="kicker">OBJECT // ${b.id.toUpperCase()}</p>
+        <h2>${b.name}</h2>
+        <p class="tagline">${b.tag}</p>
+      </div>
+      <button class="close" id="cls" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="stats">
+      <div>
+        <span>Цена ${year}</span>
+        <strong>${pr ? fmt(pr) : '—'}</strong>
+        ${delta != null ? `<div class="delta ${delta >= 0 ? 'up' : ''}">${delta >= 0 ? '+' : ''}${delta}% YoY</div>` : ''}
+      </div>
+      <div><span>Площадь</span><strong>${b.area} м²</strong></div>
+      <div><span>Этажей</span><strong>${b.floors}</strong></div>
+    </div>
+    <div class="sec">
+      <h3>Фазы стройки</h3>
+      <ol class="phases">${ORDER.map((p,i)=>`<li class="${i<=idx?'done':''} ${p===ph?'cur':''}"><span class="dot"></span>${PHASE[p]}</li>`).join('')}</ol>
+    </div>
+    <div class="sec"><h3>Рядом</h3><ul class="chips">${b.am.map(a=>`<li>${AM[a]}</li>`).join('')}</ul></div>
+    <div class="sec"><h3>Условия</h3><ul class="conds">${b.cond.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+    <div class="future"><b style="color:var(--magenta)">Что дальше</b><br>${b.future}</div>
+    <button class="cta" type="button">Забронировать интерес</button>
+  `;
+  document.getElementById('cls').onclick = () => { selected = null; sync(); };
+}
+
+function sync() {
+  const progress = ((year - 2024) / 8) * 100;
+  document.getElementById('range').style.setProperty('--p', progress + '%');
+  document.getElementById('yn').textContent = year;
+  document.getElementById('ye').textContent = EVENTS[year];
+  document.getElementById('range').value = year;
+  [...document.querySelectorAll('.ticks button')].forEach(t => t.classList.toggle('on', +t.dataset.y === year));
+  syncMapData();
+  renderPanel();
+}
+
+YEARS.forEach(y => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.dataset.y = y;
+  b.textContent = y;
+  if (y === year) b.classList.add('on');
+  b.onclick = () => { year = y; sync(); };
+  document.getElementById('ticks').appendChild(b);
+});
+
+document.getElementById('range').oninput = (e) => { year = +e.target.value; sync(); };
+document.getElementById('layers').onclick = (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const k = btn.dataset.l;
+  layersOn[k] = !layersOn[k];
+  btn.classList.toggle('on', layersOn[k]);
+  syncMapData();
+};
+document.getElementById('play').onclick = () => {
+  playing = !playing;
+  document.getElementById('play').textContent = playing ? '❚❚' : '▶';
+  if (playing) {
+    timer = setInterval(() => {
+      if (year >= 2032) {
+        playing = false;
+        document.getElementById('play').textContent = '▶';
+        clearInterval(timer);
+        return;
+      }
+      year += 1;
+      sync();
+    }, 1300);
+  } else clearInterval(timer);
+};
 </script>
 </body>
 </html>
