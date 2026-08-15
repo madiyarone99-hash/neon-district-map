@@ -1,0 +1,63 @@
+name: Assemble NEXUS-7 Pages assets
+on:
+  push:
+    paths:
+      - "pages-parts/**"
+      - ".github/workflows/assemble-nexus7-pages.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          path: main
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          persist-credentials: true
+      - name: Assemble exact files from xz parts
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import base64, hashlib, lzma
+
+          parts = Path("main/pages-parts")
+
+          def concat_text(glob):
+              files = sorted(parts.glob(glob))
+              if not files:
+                  raise SystemExit(f"missing parts: {glob}")
+              print("parts", glob, [f"{p.name}:{p.stat().st_size}" for p in files])
+              return "".join(p.read_text().strip() for p in files)
+
+          city_b64 = concat_text("city.json.xz.b64.*")
+          js_b64 = concat_text("index-bEetwXBF.js.xz.b64.*")
+          city = lzma.decompress(base64.b64decode(city_b64))
+          js = lzma.decompress(base64.b64decode(js_b64))
+          print("city", len(city), "js", len(js))
+          assert len(city) == 85724, len(city)
+          assert len(js) == 222192, len(js)
+          assert hashlib.sha256(city).hexdigest() == "1628d28dfcccecca952e27b962fc5bf28418fa251b717fcaed446cf8446f5957"
+          assert hashlib.sha256(js).hexdigest() == "19b16d5ef2a93c33a85aad33da285b5438ee8f0e63b6d536c3ef4e90f6592234"
+          Path("pages/assets").mkdir(exist_ok=True)
+          Path("pages/city.json").write_bytes(city)
+          Path("pages/assets/index-bEetwXBF.js").write_bytes(js)
+          PY
+      - name: Commit and push to gh-pages
+        working-directory: pages
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add city.json assets/index-bEetwXBF.js
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "Publish full NEXUS-7 city.json and production JS bundle"
+          git push origin HEAD:gh-pages
