@@ -7,53 +7,26 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0c0e12" />
+    <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f4ec" media="(prefers-color-scheme: light)" />
     <meta
       name="description"
       content="NEXUS-7 — карта объектов и развития левого берега Астаны"
     />
     <title>NEXUS-7 · Астана</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.3.0/dist/maplibre-gl.css"
-    />
-
-    <script type="importmap">
-      {
-        "imports": {
-          "maplibre-gl": "https://cdn.jsdelivr.net/npm/maplibre-gl@6.3.0/dist/maplibre-gl.mjs"
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('nexus7-theme');
+          var system = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          document.documentElement.dataset.theme = stored === 'light' || stored === 'dark' ? stored : system;
+        } catch (error) {
+          document.documentElement.dataset.theme = 'dark';
         }
-      }
+      })();
     </script>
-    <script type="module">
-      const boot = document.getElementById('root');
-      const fail = (message) => {
-        if (boot) boot.textContent = message;
-        throw new Error(message);
-      };
-      const manifest = await fetch('./parts/manifest.json').then((r) => {
-        if (!r.ok) fail('манифест частей не загрузился');
-        return r.json();
-      });
-      const parts = await Promise.all(manifest.js.parts.map(async (name) => {
-        const text = await fetch('./parts/' + name).then((r) => {
-          if (!r.ok) fail('не загрузилась часть ' + name);
-          return r.text();
-        });
-        return text.trim();
-      }));
-      const binary = parts.map((part) => Uint8Array.from(atob(part), (c) => c.charCodeAt(0)));
-      const bytes = new Uint8Array(binary.reduce((n, c) => n + c.length, 0));
-      let offset = 0;
-      for (const chunk of binary) { bytes.set(chunk, offset); offset += chunk.length; }
-      if (bytes.byteLength !== manifest.js.bytes) fail('JS: размер частей не сошёлся');
-      const digest = await crypto.subtle.digest('SHA-256', bytes);
-      const hash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-      if (hash !== manifest.js.sha256) fail('JS: SHA-256 частей не совпал');
-      const url = URL.createObjectURL(new Blob([bytes], { type: 'text/javascript' }));
-      await import(url);
-    </script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CK7jC1O-.css">
+    <script type="module" crossorigin src="./assets/index-DnYGsYGZ.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D6-dBiUA.css">
   </head>
   <body>
     <div id="root"></div>
