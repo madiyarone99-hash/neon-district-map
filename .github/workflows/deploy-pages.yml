@@ -20,7 +20,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+
+      - name: Restore city.json from pages-parts
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import base64, lzma
+          parts = sorted(Path('pages-parts').glob('city.json.xz.b64.*'))
+          if not parts:
+              raise SystemExit('missing pages-parts/city.json.xz.b64.*')
+          city = lzma.decompress(base64.b64decode(''.join(p.read_text().strip() for p in parts)))
+          Path('public').mkdir(exist_ok=True)
+          Path('public/city.json').write_bytes(city)
+          print('city.json', len(city))
+          PY
 
       - name: Install
         run: npm install
