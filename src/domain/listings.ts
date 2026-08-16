@@ -206,7 +206,7 @@ export const LISTINGS: Listing[] = [
       2030: 'structure',
       2031: 'structure',
       2032: 'finishing',
-    ],
+    },
     prices: [
       { year: 2028, pricePerSqm: 700000 },
       { year: 2029, pricePerSqm: 760000 },
