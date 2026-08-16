@@ -1,0 +1,61 @@
+name: Deploy NEXUS-7 to Pages
+
+on:
+  push:
+    branches:
+      - cursor/production-map-rebuild-ffca
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Restore city.json from pages-parts
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import base64, lzma
+          parts = sorted(Path('pages-parts').glob('city.json.xz.b64.*'))
+          if not parts:
+              raise SystemExit('missing pages-parts/city.json.xz.b64.*')
+          city = lzma.decompress(base64.b64decode(''.join(p.read_text().strip() for p in parts)))
+          Path('public').mkdir(exist_ok=True)
+          Path('public/city.json').write_bytes(city)
+          print('city.json', len(city))
+          PY
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish dist to gh-pages
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch gh-pages "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" pages
+          rsync -a --delete --exclude .git --exclude .nojekyll dist/ pages/
+          touch pages/.nojekyll
+          cd pages
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "Deploy NEXUS-7 production map rebuild"
+          git push origin HEAD:gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

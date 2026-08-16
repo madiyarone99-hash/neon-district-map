@@ -1,0 +1,197 @@
+/* ---------------------------------------------------------------------- */
+/* NEXUS-7 design tokens                                                   */
+/* Two first-class themes (not an inversion of each other), a restrained  */
+/* glass material, and spring-like motion curves. No neon, no glow.       */
+/* ---------------------------------------------------------------------- */
+
+:root {
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* Corner radius */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* Typography */
+  --font: "SF Pro Text", -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", sans-serif;
+  --font-display: "SF Pro Display", -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.45;
+
+  /* Motion — spring-like eases, no linear/ease-out defaults */
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-base: 260ms;
+  --duration-slow: 440ms;
+
+  /* Icon / marker sizing */
+  --icon-sm: 16px;
+  --icon-md: 22px;
+  --icon-lg: 28px;
+  --marker-poi: 26px;
+  --marker-station: 30px;
+  --touch: 44px;
+
+  /* Layout */
+  --z-map: 0;
+  --z-chrome: 4;
+  --z-sheet: 6;
+  --z-dialog: 8;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --dock-pad: calc(var(--safe-bottom) + 10px);
+
+  color-scheme: dark light;
+  font-family: var(--font);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------ Dark theme ----------------------------- */
+/* Near-black graphite, not pure black. Muted POI, controlled contrast.    */
+:root,
+:root[data-theme="dark"] {
+  --bg: #0b0d10;
+  --map-veil: rgba(9, 11, 14, 0.22);
+  --surface: rgba(28, 31, 36, 0.66);
+  --surface-solid: #191c20;
+  --elevated: rgba(38, 42, 48, 0.78);
+  --elevated-solid: #23262c;
+  --overlay: rgba(6, 7, 9, 0.55);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-blur: 22px;
+  --fg: #f3f4f6;
+  --fg-muted: #a6acb5;
+  --fg-subtle: #767e88;
+  --accent: #d8b45a;
+  --accent-strong: #e9cd82;
+  --accent-fg: #1c1508;
+  --focus: #e9cd82;
+
+  --status-planned: #7d8794;
+  --status-construction: #c98a4b;
+  --status-completed: #5f9e79;
+  --status-selected: #d8b45a;
+
+  --lrt-line: #6f9ab0;
+  --lrt-construction: #c98a4b;
+  --lrt-proposed: #6b7480;
+  --lrt-station: #eef2f5;
+  --lrt-station-ring: #6f9ab0;
+
+  --park-fill: rgba(74, 110, 84, 0.42);
+  --park-border: rgba(120, 168, 132, 0.55);
+  --park-fg: #a9d1b6;
+
+  --poi-school: #8f8ad1;
+  --poi-kindergarten: #d68fae;
+  --poi-mall: #5fa3c9;
+  --poi-shopping: #b08a63;
+
+  --success: #6bb98a;
+  --warning: #c98a4b;
+  --danger: #c4726f;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.42);
+  --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.5);
+
+  --basemap: dark;
+}
+
+/* ------------------------------ Light theme ----------------------------- */
+/* Warm off-white surfaces, Apple-Maps-like naturals. Not an inverted dark. */
+:root[data-theme="light"] {
+  --bg: #f4f1e8;
+  --map-veil: rgba(255, 255, 255, 0.12);
+  --surface: rgba(252, 250, 244, 0.72);
+  --surface-solid: #fbf9f3;
+  --elevated: rgba(255, 255, 255, 0.82);
+  --elevated-solid: #ffffff;
+  --overlay: rgba(30, 28, 22, 0.28);
+  --border: rgba(20, 18, 12, 0.08);
+  --border-strong: rgba(20, 18, 12, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.6);
+  --glass-blur: 22px;
+  --fg: #1d1c18;
+  --fg-muted: #5c5a52;
+  --fg-subtle: #8a8778;
+  --accent: #a97418;
+  --accent-strong: #8c5f13;
+  --accent-fg: #fffaf0;
+  --focus: #a97418;
+
+  --status-planned: #8b8a7e;
+  --status-construction: #b3701f;
+  --status-completed: #3f7d55;
+  --status-selected: #a97418;
+
+  --lrt-line: #3f7ea6;
+  --lrt-construction: #b3701f;
+  --lrt-proposed: #9a9788;
+  --lrt-station: #1d1c18;
+  --lrt-station-ring: #3f7ea6;
+
+  --park-fill: rgba(96, 148, 96, 0.28);
+  --park-border: rgba(63, 110, 66, 0.55);
+  --park-fg: #2f5c37;
+
+  --poi-school: #6459b0;
+  --poi-kindergarten: #b3567f;
+  --poi-mall: #1f6f96;
+  --poi-shopping: #8a5a30;
+
+  --success: #3f7d55;
+  --warning: #b3701f;
+  --danger: #ad4c47;
+
+  --shadow-1: 0 1px 2px rgba(30, 24, 10, 0.08);
+  --shadow-2: 0 8px 24px rgba(30, 24, 10, 0.12);
+  --shadow-3: 0 18px 48px rgba(30, 24, 10, 0.16);
+
+  --basemap: light;
+}
+
+body {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
